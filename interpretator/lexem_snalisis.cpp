@@ -1,0 +1,444 @@
+#include "lexem_analisis.h"
+#include "list.h"
+#include "hand_errors.h"
+
+
+void modificate(lexem_list **lex_head)
+{
+	lexem_list *p = (*lex_head);
+	lexem_list *q = 0;
+	if(p!=0 && p->next!=0)
+		p = p->next;
+	else
+		return;
+	while(p!=0)
+	{
+		if(p->prew->lexem.type == I_PLUS && p->lexem.type == I_PLUS)
+		{
+			q = p;
+			memset(p->prew->lexem.name,0,50);
+			p->prew->lexem.name[0] = '+';
+			p->prew->lexem.name[1] = '+';
+			p->prew->next = p->next;
+			p->prew->lexem.type = I_INC_PLUS;
+			p = p->prew;
+			free(q);
+		}
+		if(p->prew->lexem.type == I_MINUS && p->lexem.type == I_MINUS)
+		{
+			q = p;
+			memset(p->prew->lexem.name,0,50);
+			p->prew->lexem.name[0] = '-';
+			p->prew->lexem.name[1] = '-';
+			p->prew->next = p->next;
+			p->prew->lexem.type = I_INC_MINUS;
+			p = p->prew;
+			free(q);
+		}
+		if(p->prew->lexem.type == I_ASSIGNMENT && p->lexem.type == I_ASSIGNMENT)
+		{
+			q = p;
+			memset(p->prew->lexem.name,0,50);
+			p->prew->lexem.name[0] = '=';
+			p->prew->lexem.name[1] = '=';
+			p->prew->next = p->next;
+			p->prew->lexem.type = I_EQUAL;
+			p = p->prew;
+			free(q);
+		}
+		if(p->prew->lexem.type == I_BIGGER && p->lexem.type == I_ASSIGNMENT)
+		{
+			q = p;
+			memset(p->prew->lexem.name,0,50);
+			p->prew->lexem.name[0] = '>';
+			p->prew->lexem.name[1] = '=';
+			p->prew->next = p->next;
+			p->prew->lexem.type = I_NOT_LOWER;
+			p = p->prew;
+			free(q);
+		}
+		if(p->prew->lexem.type == I_LOW && p->lexem.type == I_ASSIGNMENT)
+		{
+			q = p;
+			memset(p->prew->lexem.name,0,50);
+			p->prew->lexem.name[0] = '<';
+			p->prew->lexem.name[1] = '=';
+			p->prew->next = p->next;
+			p->prew->lexem.type = I_NOT_BIGGER;
+			p = p->prew;
+			free(q);
+		}
+		if(p->prew->lexem.type == I_NOT && p->lexem.type == I_ASSIGNMENT)
+		{
+			q = p;
+			memset(p->prew->lexem.name,0,50);
+			p->prew->lexem.name[0] = '!';
+			p->prew->lexem.name[1] = '=';
+			p->prew->next = p->next;
+			p->prew->lexem.type = I_NOT_LOWER;
+			p = p->prew;
+			free(q);
+		}
+		if(p->prew->lexem.type == I_BIN_AND && p->lexem.type == I_BIN_AND)
+		{
+			q = p;
+			memset(p->prew->lexem.name,0,50);
+			p->prew->lexem.name[0] = '&';
+			p->prew->lexem.name[1] = '&';
+			p->prew->next = p->next;
+			p->prew->lexem.type = I_AND;
+			p = p->prew;
+			free(q);
+		}
+		if(p->prew->lexem.type == I_BIN_OR && p->lexem.type == I_BIN_OR)
+		{
+			q = p;
+			memset(p->prew->lexem.name,0,50);
+			p->prew->lexem.name[0] = '|';
+			p->prew->lexem.name[1] = '|';
+			p->prew->next = p->next;
+			p->prew->lexem.type = I_OR;
+			p = p->prew;
+			free(q);
+		}
+		p = p->next;
+	}
+}
+
+
+void get_value(Lexem *lexem)
+{
+	switch(lexem->type_data)
+	{
+	case(I_INTEGER):
+		{
+			int len = strlen(lexem->name);
+			int ans = 0;
+			int step = 1;
+			for(int i = 0;i<len;i++)
+			{
+				ans+=(lexem->name[len-1-i]-'0')*step;
+				step*=10;
+			}
+			lexem->Idata = ans;
+			break;
+		}
+	case(I_DOUBLE):
+		{
+			int len = strlen(lexem->name);
+			double ans = 0;
+			double step = 1;
+			int k = 0, i = 0;
+			for(i = 0;i<len;i++)
+				if(lexem->name[i] == '.')
+					break;
+			k = i;
+			for(i = 0;i<k;i++)
+			{
+				ans+=(lexem->name[k-1-i]-'0')*step;
+				step*=10;
+			}
+			step = 0.1;
+			for(i = k+1;i<len;i++)
+			{
+				ans+=(lexem->name[i]-'0')*step;
+				step/=10;
+			}
+			lexem->Ddata = ans;
+			break;
+		}
+	case(I_CHAR):
+		{
+			lexem->Cdata = lexem->name[1];
+			break;
+		}
+	}
+}
+/////////////////////////////////////////////////////////
+
+void lex_analisis(FILE *fin,lexem_list **lex_head,struct errors_list **er_head)
+{
+	int c = 0,i = 0, state = 0;
+	char lxm[50];
+	char *p = (char*)malloc(50);
+	memset(lxm,0,50);
+	int line_pos = 1;
+	while((c = fgetc(fin)) != -1)
+	{
+		if(c != '(' && c != ')' && c!= ';' && c != '+' && c != '-' && c!= '=' && c != '>' && c != '<' && c != '*' && c != '/' && c != ',' && c != '{' && c !='}' && c != '!' && c!= '|' && c != '&' && c!= ' ' && c != ' ' && c !='\n' && c !='\t')
+		{
+			lxm[i] = (char)c;
+			i++;
+			if(c== '"' && state == 0)
+				state ^= 1;
+			else
+				if(state && c == '"')
+					state ^= 1;
+			if(c == 39)
+			{
+				if(lxm[0] != 39)
+				{
+					move_to_err_list(I_STRING_ERROR,line_pos,er_head);
+					return;
+				}
+				lxm[1] = (char)fgetc(fin);
+				if(!(lxm[1] >= 'a' && lxm[0] <='z') && !(lxm[1] >='A' && lxm[0] <= 'Z') && !(lxm[1] >='0' && lxm[1] <= '9'))
+				{
+					if(lxm[1] != 39)
+					{
+						move_to_err_list(I_ERR_IN_END_LINE,line_pos,er_head);
+						return;
+					}
+					else
+					{
+						move_to_err_list(I_ENPTY_CHAR_CONST,line_pos,er_head);
+						return;
+					}
+					printf("lexem analisis");
+				}
+				else
+					lxm[2] = (char)fgetc(fin);
+				if(lxm[2] != 39)
+				{
+					move_to_err_list(I_NO_INVERED_COMMAS,line_pos,er_head);
+					return;
+				}
+			}
+		}
+		else
+		{
+			if(state == 0)
+			{
+				if(lxm[0]!=0)
+				{
+					//printf("%s\n",lxm);
+					strcpy(p,lxm);
+					Lexem *new_lexem = (Lexem *)malloc(sizeof(Lexem));
+
+					new_lexem->line_pos = line_pos;
+					
+					strcpy(new_lexem->name,lxm);
+					
+					new_lexem->type = lexem_analisis(p,line_pos,lex_head,er_head);		
+					
+					new_lexem->type_data = new_lexem->type;
+
+					if(new_lexem->type == I_INTEGER || new_lexem->type == I_DOUBLE || new_lexem->type == I_CHAR)
+						new_lexem->type = I_IDENTIFIC;
+					
+					get_value(new_lexem);
+					
+					move_to_list(*new_lexem,lex_head);
+					
+					memset(lxm,0,50);
+					free(new_lexem);
+				}
+				if(c == '\n')
+					line_pos++;
+				memset(lxm,0,50);
+				i = 0;
+				if(c!= ' ' && c != ' ' && c !='\n' && c !='\t')
+				{
+					char b[]={0,0};
+					b[0] = c;
+					
+					Lexem *new_lexem = (Lexem *)malloc(sizeof(Lexem));
+				
+					new_lexem->line_pos = line_pos;
+					
+					strcpy(new_lexem->name,b);
+					
+					new_lexem->type = lexem_analisis(b,line_pos,lex_head,er_head);
+					
+					new_lexem->type_data = new_lexem->type;
+	//				printf("%s \n",b);
+					get_value(new_lexem);
+
+					move_to_list(*new_lexem,lex_head);
+
+					free(new_lexem);
+					memset(lxm,0,50);
+				//	printf("%c\n",c);
+				}
+			}
+			else
+			{
+				lxm[i] = (char)c;
+				i++;
+			}
+		}
+	}
+	if(lxm[0] != 0)
+	{
+		//printf("%s\n",lxm);
+		strcpy(p,lxm);
+		Lexem *new_lexem = (Lexem *)malloc(sizeof(Lexem));
+
+		new_lexem->line_pos = line_pos;
+						
+		strcpy(new_lexem->name,lxm);
+						
+		new_lexem->type = lexem_analisis(p,line_pos,lex_head,er_head);		
+						
+		new_lexem->type_data = new_lexem->type;
+						
+		if(new_lexem->type == I_INTEGER || new_lexem->type == I_DOUBLE || new_lexem->type == I_CHAR)
+			new_lexem->type = I_IDENTIFIC;
+		get_value(new_lexem);
+						
+		move_to_list(*new_lexem,lex_head);
+						
+		memset(lxm,0,50);
+		free(new_lexem);
+	}
+	if((*lex_head)!=0)
+		for(;(*lex_head)->prew!=0;(*lex_head) = (*lex_head)->prew);
+	modificate(lex_head);
+}
+
+int lexem_analisis(char *lexem,int line_pos,lexem_list **lex_head,struct errors_list **er_head)
+{
+	int i = strlen(lexem);
+	int k = 0;
+	int state = 0;
+	if(i == 1)
+	{
+		int c = (int)lexem[0];
+		switch(c)
+		{
+			case('('):
+				return I_BRACKET_OPEN;
+			case(')'):
+				return I_BRACKET_CLOSE;
+			case('{'):
+				return I_BLOCK_OPEN;
+			case('}'):
+				return I_BLOCK_CLOSE;
+			case('-'):
+				return I_MINUS;
+			case('+'):
+				return I_PLUS;
+			case('='):
+				return I_ASSIGNMENT;
+			case('%'):
+				return I_PERCENT;
+			case('*'):
+				return I_MULTIPLYING;
+			case('/'):
+				return I_DIVISION;
+			case(';'):
+				return I_SEMICOLON;
+			case(','):
+				return I_COMMA;
+			case('!'):
+				return I_NOT;
+			case('>'):
+				return I_BIGGER;
+			case('<'):
+				return I_LOW;
+			case('|'):
+				return I_BIN_OR;
+			case('&'):
+				return I_BIN_AND;
+			default:
+				{
+					if(c >= '0' && c<= '9')
+						return I_INTEGER;
+					else
+						if((c>='a' && c<='z') || (c>='A' && c<='Z'))
+							return I_IDENTIFIC;
+						else
+						{
+							move_to_err_list(I_STRING_ERROR,line_pos,er_head);
+							return I_IDENTIFIC;
+						}
+				}
+		}
+		//определение типа лексемы
+	}
+	else
+	{
+		if((lexem[0]>='a' && lexem[0]<='z') || (lexem[0] >= 'A' && lexem[0] <= 'Z'))
+		{
+			bool l = FALSE;
+			while(k<i)
+			{
+				if((lexem[k]>='a' && lexem[k]<='z') || (lexem[k] >= 'A' && lexem[k] <= 'Z'))
+					k++;
+				else
+				{
+					k++;
+					if(!l)
+						l = TRUE;
+					else
+					{
+						move_to_err_list(I_STRING_ERROR,line_pos,er_head);
+						//printf("\n\n\t\tnerror!\n\n");
+						break;
+					}
+				}
+			}
+			if(strcmp("int",lexem) == 0)
+				return I_CONST_WORD;
+			if(strcmp("double",lexem) == 0)
+				return I_CONST_WORD;
+			if(strcmp("void",lexem) == 0)
+				return I_CONST_WORD;
+			if(strcmp("char",lexem) == 0)
+				return I_CONST_WORD;
+			if(strcmp("return",lexem) == 0)
+				return I_CONST_WORD;
+			if(strcmp("if",lexem) == 0)
+				return I_CONST_WORD;
+			if(strcmp("while",lexem) == 0)
+				return I_CONST_WORD;
+			if(strcmp("else",lexem) == 0)
+				return I_CONST_WORD;
+			return I_IDENTIFIC;
+		}
+		if(lexem[0] == '"')
+			if(lexem[i-1] != '"')
+			{
+				//printf("\n\n\t\tnerror!\n\n");
+				move_to_err_list(I_STRING_ERROR,line_pos,er_head);
+				return I_STRING;
+			}
+			else
+				return I_STRING;
+		if(lexem[0] >= '0' && lexem[0] <= '9')
+		{
+			int d = 0;
+			while(k<i)
+			{
+				if(lexem[k] >= '0' && lexem[k] <= '9')
+					k++;
+				else
+					if(lexem[k] == '.' && k < i - 1)
+					{
+						k++;
+						d = 1;
+					}
+					else
+					{
+						move_to_err_list(I_STRING_ERROR,line_pos,er_head);
+						//printf("\n\n\t\tnerror!\n\n");
+						break;
+					}
+			}
+			if(d == 1)
+					return I_DOUBLE;
+				else
+					return I_INTEGER;
+		}
+		if(lexem[0] == 39)
+			if(i != 3 || lexem[2] != 39)
+			{
+				//printf("\n\n\terror!\n");
+				move_to_err_list(I_STRING_ERROR,line_pos,er_head);
+				return I_CHAR;
+			}
+			else
+				return I_CHAR;
+	}
+	return 0;
+}
