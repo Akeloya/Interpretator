@@ -357,21 +357,22 @@ char* get_error_string(int error,int line_pos,char* err)
 
 void move_to_err_list(int type,int line_pos,struct errors_list **head)
 {
-	errors_list * p =(errors_list*)malloc(sizeof(errors_list));
+	errors_list* p = new errors_list();
 	p->lise_pos = line_pos;
 	p->type = type;
-	if((*head) == 0)
+	errors_list* thisHead = *head;
+	if(thisHead == 0)
 	{
-		p->next = (*head);
-		(*head) = (errors_list*)malloc(sizeof(errors_list));
-		(*head) = p;
-		(*head)->prew = 0;
+		p->next = thisHead;
+		thisHead = new errors_list();
+		thisHead = p;
+		thisHead->prew = 0;
 	}
 	else
 	{
-		p->next = (*head);
-		(*head)->prew = p;
-		(*head) = p;
-		(*head)->prew = 0;
+		p->next = thisHead;
+		thisHead->prew = p;
+		thisHead = p;
+		thisHead->prew = 0;
 	}
 }

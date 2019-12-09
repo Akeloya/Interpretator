@@ -165,10 +165,9 @@ void lex_analisis(FILE *fin,lexem_list **lex_head,struct errors_list **er_head)
 	int line_pos = 1;
 	while((c = fgetc(fin)) != -1)
 	{
-		if(c != '(' && c != ')' && c!= ';' && c != '+' && c != '-' && c!= '=' && c != '>' && c != '<' && c != '*' && c != '/' && c != ',' && c != '{' && c !='}' && c != '!' && c!= '|' && c != '&' && c!= ' ' && c != ' ' && c !='\n' && c !='\t')
+		if(c != '(' && c != ')' && c!= ';' && c != '+' && c != '-' && c!= '=' && c != '>' && c != '<' && c != '*' && c != '/' && c != ',' && c != '{' && c !='}' && c != '!' && c!= '|' && c != '&' && c!= ' ' && c !='\n' && c !='\t')
 		{
-			lxm[i] = (char)c;
-			i++;
+			lxm[i++] = (char)c;			
 			if(c== '"' && state == 0)
 				state ^= 1;
 			else
@@ -211,15 +210,14 @@ void lex_analisis(FILE *fin,lexem_list **lex_head,struct errors_list **er_head)
 			{
 				if(lxm[0]!=0)
 				{
-					//printf("%s\n",lxm);
 					strcpy(p,lxm);
-					Lexem *new_lexem = (Lexem *)malloc(sizeof(Lexem));
+					Lexem* new_lexem = new Lexem();
 
 					new_lexem->line_pos = line_pos;
 					
 					strcpy(new_lexem->name,lxm);
 					
-					new_lexem->type = lexem_analisis(p,line_pos,lex_head,er_head);		
+					new_lexem->type = GetLexemType(p,line_pos,lex_head,er_head);		
 					
 					new_lexem->type_data = new_lexem->type;
 
@@ -231,24 +229,24 @@ void lex_analisis(FILE *fin,lexem_list **lex_head,struct errors_list **er_head)
 					move_to_list(*new_lexem,lex_head);
 					
 					memset(lxm,0,50);
-					free(new_lexem);
+					delete new_lexem;
 				}
 				if(c == '\n')
 					line_pos++;
 				memset(lxm,0,50);
 				i = 0;
-				if(c!= ' ' && c != ' ' && c !='\n' && c !='\t')
+				if(c!= ' '&& c !='\n' && c !='\t')
 				{
 					char b[]={0,0};
 					b[0] = c;
 					
-					Lexem *new_lexem = (Lexem *)malloc(sizeof(Lexem));
+					Lexem *new_lexem = new Lexem();
 				
 					new_lexem->line_pos = line_pos;
 					
 					strcpy(new_lexem->name,b);
 					
-					new_lexem->type = lexem_analisis(b,line_pos,lex_head,er_head);
+					new_lexem->type = GetLexemType(b,line_pos,lex_head,er_head);
 					
 					new_lexem->type_data = new_lexem->type;
 	//				printf("%s \n",b);
@@ -256,7 +254,7 @@ void lex_analisis(FILE *fin,lexem_list **lex_head,struct errors_list **er_head)
 
 					move_to_list(*new_lexem,lex_head);
 
-					free(new_lexem);
+					delete new_lexem;
 					memset(lxm,0,50);
 				//	printf("%c\n",c);
 				}
@@ -272,13 +270,13 @@ void lex_analisis(FILE *fin,lexem_list **lex_head,struct errors_list **er_head)
 	{
 		//printf("%s\n",lxm);
 		strcpy(p,lxm);
-		Lexem *new_lexem = (Lexem *)malloc(sizeof(Lexem));
+		Lexem *new_lexem = new Lexem();
 
 		new_lexem->line_pos = line_pos;
 						
 		strcpy(new_lexem->name,lxm);
 						
-		new_lexem->type = lexem_analisis(p,line_pos,lex_head,er_head);		
+		new_lexem->type = GetLexemType(p,line_pos,lex_head,er_head);		
 						
 		new_lexem->type_data = new_lexem->type;
 						
@@ -289,14 +287,14 @@ void lex_analisis(FILE *fin,lexem_list **lex_head,struct errors_list **er_head)
 		move_to_list(*new_lexem,lex_head);
 						
 		memset(lxm,0,50);
-		free(new_lexem);
+		delete new_lexem;
 	}
 	if((*lex_head)!=0)
 		for(;(*lex_head)->prew!=0;(*lex_head) = (*lex_head)->prew);
 	modificate(lex_head);
 }
 
-int lexem_analisis(char *lexem,int line_pos,lexem_list **lex_head,struct errors_list **er_head)
+int GetLexemType(char *lexem,int line_pos,lexem_list **lex_head,struct errors_list **er_head)
 {
 	int i = strlen(lexem);
 	int k = 0;
