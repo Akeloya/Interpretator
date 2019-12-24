@@ -4,8 +4,9 @@
 #include "expression_analisis.h"
 #include "funct_analisis.h"
 #include "while_analisis.h"
+#include "stack.h"
 
-void block_analisis(lexem_list ** lex_head,errors_list ** er_head,c_stack **stack_head,int exit_code)
+void block_analisis(lexem_list ** lex_head,errors_list ** er_head,Stack<int>* stack,int exit_code)
 {
 	lexem_list* p = (*lex_head);
 
@@ -23,34 +24,34 @@ void block_analisis(lexem_list ** lex_head,errors_list ** er_head,c_stack **stac
 		{
 		case(I_CONST_WORD):
 			{
-				if(peek_condition(*stack_head) == I_BODY)
+				if(stack->Peek() == I_BODY)
 				{
 					if(strcmp("int",p->lexem.name) == 0 || strcmp("double",p->lexem.name) == 0 || strcmp("char",p->lexem.name) == 0)
 					{
-						push_condition(I_DECLARATION,stack_head);
-						declaration_analisis(&p,er_head,stack_head);
-						pop_condition(stack_head);
+						stack->Push(I_DECLARATION);
+						declaration_analisis(&p,er_head, stack);
+						stack->Pop();
 						break;
 					}
 					if(strcmp("while",p->lexem.name) == 0)
 					{
-						push_condition(I_WHILE,stack_head);
-						while_analisis(&p,er_head,stack_head);
-						pop_condition(stack_head);
+						stack->Push(I_WHILE);
+						while_analisis(&p,er_head, stack);
+						stack->Pop();
 						break;
 					}
 					if(strcmp("if",p->lexem.name) == 0)
 					{
-						push_condition(I_IF,stack_head);
-						if_analisis(&p,er_head,stack_head);
-						pop_condition(stack_head);
+						stack->Push(I_IF);
+						if_analisis(&p,er_head, stack);
+						stack->Pop();
 						break;
 					}
 					if(strcmp("return",p->lexem.name) == 0)
 					{
-						push_condition(I_RETURN,stack_head);
-						return_analisis(&p,er_head,stack_head);
-						pop_condition(stack_head);
+						stack->Push(I_RETURN);
+						return_analisis(&p,er_head, stack);
+						stack->Pop();
 						break;
 					}
 					printf("body");
@@ -59,32 +60,32 @@ void block_analisis(lexem_list ** lex_head,errors_list ** er_head,c_stack **stac
 			}
 		case(I_IDENTIFIC):
 			{
-				if(peek_condition(*stack_head) == I_BODY)
+				if(stack->Peek() == I_BODY)
 				{
 					if(p->next->lexem.type == I_BRACKET_OPEN)
 					{
-						push_condition(I_FUNCT_ANALISIS,stack_head);
-						funct_inline_analisis(&p,er_head,stack_head);
-						pop_condition(stack_head);
+						stack->Push(I_FUNCT_ANALISIS);
+						funct_inline_analisis(&p,er_head, stack);
+						stack->Pop();
 						break;
 					}
 					if(p->next->lexem.type == I_ASSIGNMENT)
 					{
-						push_condition(I_ASSIGNMENT,stack_head);
-						assignment_analisis(&p,er_head,stack_head);
-						pop_condition(stack_head);
+						stack->Push(I_ASSIGNMENT);
+						assignment_analisis(&p,er_head, stack);
+						stack->Pop();
 						break;
 					}
 					if(p->next->lexem.type == I_COMMA || p->next->lexem.type == I_SEMICOLON)
 					{
-						if(peek_condition((*stack_head)->next) == I_ASSIGNMENT)
+						if(stack->Take(1) == I_ASSIGNMENT)
 						{
 							exit = TRUE;
 							break;
 						}
 						else
 						{
-							printf("body_dfb");
+							//printf("body_dfb");
 							//move_to_err_list(I_UNKNOWBLE,p->lexem.line_pos,er_head);
 						}
 					}
@@ -131,7 +132,7 @@ void block_analisis(lexem_list ** lex_head,errors_list ** er_head,c_stack **stac
 						else
 							printf("body asdvas");
 					}
-					printf("body asdvasdvasdvasdvasdv");
+					//printf("body asdvasdvasdvasdvasdv");
 					break;
 				}
 				move_to_err_list(I_UNEXTENDED,p->lexem.line_pos,er_head);

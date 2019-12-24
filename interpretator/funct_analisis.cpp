@@ -1,8 +1,9 @@
 #include "funct_analisis.h"
 #include "body_analisis.h"
 #include "expression_analisis.h"
+#include "stack.h"
 
-void funct_analisis(lexem_list **lex_head,errors_list** er_head,c_stack **stack_head)
+void funct_analisis(lexem_list **lex_head,errors_list** er_head,Stack<int>* stack)
 {
 	lexem_list  *p = (*lex_head);
 
@@ -14,11 +15,11 @@ void funct_analisis(lexem_list **lex_head,errors_list** er_head,c_stack **stack_
 		{
 		case(I_CONST_WORD):
 			{
-				if(peek_condition(*stack_head) == I_FUNCT_ANALISIS)
+				if(stack->Peek() == I_FUNCT_ANALISIS)
 				{
 					if(strcmp(p->lexem.name,"int") == 0 || strcmp(p->lexem.name,"double") == 0 || strcmp(p->lexem.name,"char") == 0 || strcmp("void",p->lexem.name) == 0)
 					{
-						push_condition(I_IDENTIFIC,stack_head);
+						stack->Push(I_IDENTIFIC);
 						break;
 					}
 					move_to_err_list(I_ERR_AFTER_BLOCK,p->lexem.line_pos,er_head);
@@ -28,10 +29,10 @@ void funct_analisis(lexem_list **lex_head,errors_list** er_head,c_stack **stack_
 			}
 		case(I_IDENTIFIC):
 			{
-				if(peek_condition(*stack_head) == I_IDENTIFIC)
+				if(stack->Peek() == I_IDENTIFIC)
 				{
-					pop_condition(stack_head);
-					push_condition(I_BRACKET_OPEN,stack_head);
+					stack->Pop();
+					stack->Push(I_BRACKET_OPEN);
 					break;
 				}
 				else
@@ -43,20 +44,20 @@ void funct_analisis(lexem_list **lex_head,errors_list** er_head,c_stack **stack_
 			}
 		case(I_BRACKET_OPEN):
 			{
-				if(peek_condition(*stack_head) == I_BRACKET_OPEN)
+				if(stack->Peek() == I_BRACKET_OPEN)
 				{
-					pop_condition(stack_head);
-					push_condition(I_PARAMETERS,stack_head);
-					parameters_analisis(&p,er_head,stack_head);
-					pop_condition(stack_head);
+					stack->Pop();
+					stack->Push(I_PARAMETERS);
+					parameters_analisis(&p,er_head,stack);
+					stack->Pop();
 				}
 				break;
 			}
 		case(I_BLOCK_OPEN):
 			{
-				push_condition(I_BODY,stack_head);
-				block_analisis(&p,er_head,stack_head,I_BLOCK_CLOSE);
-				pop_condition(stack_head);
+				stack->Push(I_BODY);
+				block_analisis(&p,er_head,stack,I_BLOCK_CLOSE);
+				stack->Pop();
 				if(p->next == 0)
 					exit = TRUE;
 				break;
@@ -79,7 +80,7 @@ void funct_analisis(lexem_list **lex_head,errors_list** er_head,c_stack **stack_
 }
 
 
-void parameters_analisis(lexem_list **lex_head,errors_list** er_head,c_stack **stack_head)
+void parameters_analisis(lexem_list **lex_head,errors_list** er_head,Stack<int>* stack)
 {
 	lexem_list *p = (*lex_head);
 
@@ -91,10 +92,10 @@ void parameters_analisis(lexem_list **lex_head,errors_list** er_head,c_stack **s
 		{
 		case(I_CONST_WORD):
 			{
-				if(peek_condition(*stack_head) == I_CONST_WORD)
+				if(stack->Peek() == I_CONST_WORD)
 				{
-					pop_condition(stack_head);
-					push_condition(I_IDENTIFIC,stack_head);
+					stack->Pop();
+					stack->Push(I_IDENTIFIC);
 				}
 				else
 				{
@@ -104,9 +105,9 @@ void parameters_analisis(lexem_list **lex_head,errors_list** er_head,c_stack **s
 			}
 		case(I_IDENTIFIC):
 			{
-				if(peek_condition(*stack_head) == I_IDENTIFIC)
+				if(stack->Peek() == I_IDENTIFIC)
 				{
-					pop_condition(stack_head);
+					stack->Pop();
 					if(p->lexem.type_data == I_INTEGER || p->lexem.type_data == I_DOUBLE || p->lexem.type_data == I_CHAR)
 					{
 						move_to_err_list(I_ERR_IN_IDENTIFIC,p->lexem.line_pos,er_head);
@@ -120,26 +121,26 @@ void parameters_analisis(lexem_list **lex_head,errors_list** er_head,c_stack **s
 			}
 		case(I_BRACKET_CLOSE):
 			{
-				if(peek_condition(*stack_head) == I_PARAMETERS)
+				if(stack->Peek() == I_PARAMETERS)
 				{
 					exit = TRUE;
 					break;
 				}
 				else
 				{
-					if(peek_condition(*stack_head) != I_CONST_WORD)
-						move_to_err_list(I_UNEXTENDED_BRACK,p->lexem.line_pos,er_head);
+					if (stack->Peek() != I_CONST_WORD)
+						move_to_err_list(I_UNEXTENDED_BRACK, p->lexem.line_pos, er_head);
 					else
-						pop_condition(stack_head);
+						stack->Pop();
 					exit = TRUE;
 					break;
 				}
 			}
 		case(I_COMMA):
 			{
-				if(peek_condition(*stack_head) == I_PARAMETERS)
+				if(stack->Peek() == I_PARAMETERS)
 				{
-					push_condition(I_CONST_WORD,stack_head);
+					stack->Push(I_CONST_WORD);
 				}
 				else
 				{
@@ -149,9 +150,9 @@ void parameters_analisis(lexem_list **lex_head,errors_list** er_head,c_stack **s
 			}
 		case(I_BRACKET_OPEN):
 			{
-				if(peek_condition(*stack_head) == I_PARAMETERS)
+				if(stack->Peek() == I_PARAMETERS)
 				{
-					push_condition(I_CONST_WORD,stack_head);
+					stack->Push(I_CONST_WORD);
 				}
 				break;
 			}
@@ -166,7 +167,7 @@ void parameters_analisis(lexem_list **lex_head,errors_list** er_head,c_stack **s
 	(*lex_head) = p;
 }
 
-void funct_inline_analisis(lexem_list **lex_head,errors_list** er_head,c_stack **stack_head)
+void funct_inline_analisis(lexem_list **lex_head,errors_list** er_head,Stack<int>* stack)
 {
 	lexem_list *p = (*lex_head);
 
@@ -178,100 +179,100 @@ void funct_inline_analisis(lexem_list **lex_head,errors_list** er_head,c_stack *
 		{
 		case(I_IDENTIFIC):
 			{
-				if(peek_condition(*stack_head) == I_FUNCT_ANALISIS)
+				if(stack->Peek() == I_FUNCT_ANALISIS)
 				{
-					push_condition(I_BRACKET_OPEN,stack_head);
+					stack->Push(I_BRACKET_OPEN);
 					break;
 				}
-				if(peek_condition(*stack_head) == I_IDENTIFIC)
+				if(stack->Peek() == I_IDENTIFIC)
 				{
-					pop_condition(stack_head);
-					//push_condition(I_DECLARATION,stack_head);
+					stack->Pop();
+					//stack->Push(I_DECLARATION,stack_head);
 					if(p->next->lexem.type != I_BRACKET_CLOSE)
 					{
-						push_condition(I_EXPRESSION,stack_head);
-						expression_analisis(&p,er_head,stack_head,I_BRACKET_CLOSE);
-						pop_condition(stack_head);
+						stack->Push(I_EXPRESSION);
+						expression_analisis(&p,er_head,stack,I_BRACKET_CLOSE);
+						stack->Pop();
 						if(p->lexem.type == I_BRACKET_CLOSE)
 						{
-							push_condition(I_SEMICOLON,stack_head);
+							stack->Push(I_SEMICOLON);
 							break;
 						}
 					}
 					else
 					{
-						push_condition(I_COMMA,stack_head);
+						stack->Push(I_COMMA);
 						break;
 					}
-					//pop_condition(stack_head);
-					push_condition(I_IDENTIFIC,stack_head);
+					//stack->Pop()
+					stack->Push(I_IDENTIFIC);
 				}
 				break;
 			}
 		case(I_BRACKET_OPEN):
 			{
-				if(peek_condition(*stack_head) == I_BRACKET_OPEN)
+				if(stack->Peek() == I_BRACKET_OPEN)
 				{
-					pop_condition(stack_head);
-					push_condition(I_IDENTIFIC,stack_head);
+					stack->Pop();
+					stack->Push(I_IDENTIFIC);
 				}
 				else
 				{
-					printf("asdfbvasfbv");
+					//printf("asdfbvasfbv");
 				}
 				break;
 			}
 		case(I_COMMA):
 			{
-				if(peek_condition(*stack_head) == I_COMMA)
+				if(stack->Peek() == I_COMMA)
 				{
-					pop_condition(stack_head);
-					push_condition(I_IDENTIFIC,stack_head);
+					stack->Pop();
+					stack->Push(I_IDENTIFIC);
 					break;
 				}
-				printf("sdg");
+				//printf("sdg");
 				break;
 			}
 		case(I_BRACKET_CLOSE):
 			{
-				if(peek_condition(*stack_head) == I_COMMA)
+				if(stack->Peek() == I_COMMA)
 				{
-					pop_condition(stack_head);
-					push_condition(I_SEMICOLON,stack_head);
+					stack->Pop();
+					stack->Push(I_SEMICOLON);
 					break;
 				}
-				if(peek_condition(*stack_head) == I_IDENTIFIC)
+				if(stack->Peek() == I_IDENTIFIC)
 				{
-					pop_condition(stack_head);
-					push_condition(I_SEMICOLON,stack_head);
+					stack->Pop();
+					stack->Push(I_SEMICOLON);
 					move_to_err_list(I_NO_FUNCT_PARAM,p->lexem.line_pos,er_head);
 					break;
 				}
-				printf("zfg");
+				//printf("zfg");
 				break;
 			}
 		case(I_STRING):
 			{
-				if(peek_condition(*stack_head) == I_IDENTIFIC)
+				if(stack->Peek() == I_IDENTIFIC)
 				{
-					pop_condition(stack_head);
-					push_condition(I_COMMA,stack_head);
+					stack->Pop();
+					stack->Push(I_COMMA);
 					break;
 				}
-				printf("zsdfg");
+				//printf("zsdfg");
 				break;
 			}
 		case(I_SEMICOLON):
 			{
-				if(peek_condition(*stack_head) == I_SEMICOLON)
+				if(stack->Peek() == I_SEMICOLON)
 				{
-					pop_condition(stack_head);
+					stack->Pop();
 					exit = TRUE;
 					break;
 				}
 				else
 				{
-					printf("asfglhg");
+					//printf("asfglhg");
 				}
 			}
 		default:

@@ -1,6 +1,8 @@
 #include "expression_analisis.h"
+#include "Stack.h"
+#include "Stack.cpp"
 
-void expression_analisis(lexem_list **lex_head,errors_list** er_head,c_stack **stack_head,int exit_code)
+void expression_analisis(lexem_list **lex_head,errors_list** er_head,Stack<int>* stack, int exit_code)
 {
 	lexem_list *p = (*lex_head);
 
@@ -12,35 +14,36 @@ void expression_analisis(lexem_list **lex_head,errors_list** er_head,c_stack **s
 		{
 		case(I_IDENTIFIC):
 			{
-				if(peek_condition(*stack_head) == I_EXPRESSION)
+				if(stack->Peek() == I_EXPRESSION)
 				{
-					push_condition(I_OPERATOR,stack_head);
+					stack->Push(I_OPERATOR);
 					break;
 				}
-				if(peek_condition(*stack_head) == I_IDENTIFIC)
+				if(stack->Peek() == I_IDENTIFIC)
 				{
-					pop_condition(stack_head);
-					push_condition(I_OPERATOR,stack_head);
+					stack->Pop();
+					stack->Push(I_OPERATOR);
 					break;
 				}
-				if(peek_condition(*stack_head) == I_OPERATOR)
+				if(stack->Peek() == I_OPERATOR)
 				{
 					if(p->lexem.line_pos != p->prew->lexem.line_pos)
 					{
-						if(peek_condition((*stack_head)->next->next->next) == I_IF)
+						//3 указателя было
+						if(stack->Take(4) == I_IF)
 						{
-							pop_condition(stack_head);
-							pop_condition(stack_head);
-							push_condition(I_EXIT,stack_head);
-							push_condition(I_EXPRESSION,stack_head);
+							stack->Pop();
+							stack->Pop();
+							stack->Push(I_EXIT);
+							stack->Push(I_EXPRESSION);
 							move_to_err_list(I_NO_CLOSE_BRACKET,p->prew->lexem.line_pos,er_head);
 							(*lex_head) = p->prew;
 							return;
 						}
 						else
 						{
-							pop_condition(stack_head);
-							push_condition(I_EXIT,stack_head);
+							stack->Pop();
+							stack->Push(I_EXIT);
 							move_to_err_list(I_UNEXTENDED_ID,p->lexem.line_pos,er_head);
 							return;
 						}
@@ -54,16 +57,16 @@ void expression_analisis(lexem_list **lex_head,errors_list** er_head,c_stack **s
 			}
 		case(I_SEMICOLON):
 			{
-				if(peek_condition(*stack_head) == I_OPERATOR)
+				if(stack->Peek() == I_OPERATOR)
 				{
-					pop_condition(stack_head);
+					stack->Pop();
 					exit = TRUE;
 				}
 				else
 				{
-					while(peek_condition(*stack_head) != I_EXPRESSION)
+					while(stack->Peek() != I_EXPRESSION)
 					{
-						switch(peek_condition(*stack_head))
+						switch(stack->Peek())
 						{
 						case(I_BRACKET_CLOSE):
 							{
@@ -71,7 +74,7 @@ void expression_analisis(lexem_list **lex_head,errors_list** er_head,c_stack **s
 								break;
 							}
 						}
-						pop_condition(stack_head);
+						stack->Pop();
 					}
 					exit = TRUE;
 				}
@@ -79,19 +82,19 @@ void expression_analisis(lexem_list **lex_head,errors_list** er_head,c_stack **s
 			}
 		case(I_BRACKET_OPEN):
 			{
-				if(peek_condition(*stack_head) == I_IDENTIFIC)
+				if(stack->Peek() == I_IDENTIFIC)
 				{
-					pop_condition(stack_head);
-					push_condition(I_BRACKET_CLOSE,stack_head);
-					push_condition(I_IDENTIFIC,stack_head);
+					stack->Pop();
+					stack->Push(I_BRACKET_CLOSE);
+					stack->Push(I_IDENTIFIC);
 					break;
 				}
 				else
 				{
-					if(peek_condition(*stack_head) == I_EXPRESSION)
+					if(stack->Peek() == I_EXPRESSION)
 					{
-						push_condition(I_BRACKET_CLOSE,stack_head);
-						push_condition(I_IDENTIFIC,stack_head);
+						stack->Push(I_BRACKET_CLOSE);
+						stack->Push(I_IDENTIFIC);
 						break;
 					}
 					printf("svas");
@@ -100,13 +103,13 @@ void expression_analisis(lexem_list **lex_head,errors_list** er_head,c_stack **s
 			}
 		case(I_BRACKET_CLOSE):
 			{
-				if(peek_condition(*stack_head) == I_OPERATOR)
+				if(stack->Peek() == I_OPERATOR)
 				{
-					pop_condition(stack_head);
-					if(peek_condition(*stack_head) == I_BRACKET_CLOSE)
+					stack->Pop();
+					if(stack->Peek() == I_BRACKET_CLOSE)
 					{
-						pop_condition(stack_head);
-						push_condition(I_OPERATOR,stack_head);
+						stack->Pop();
+						stack->Push(I_OPERATOR);
 						break;
 					}
 					else
@@ -126,17 +129,17 @@ void expression_analisis(lexem_list **lex_head,errors_list** er_head,c_stack **s
 			}
 		case(I_INC_PLUS):
 			{
-				if(peek_condition(*stack_head) == I_EXPRESSION || peek_condition(*stack_head) == I_IDENTIFIC)
+				if(stack->Peek() == I_EXPRESSION || stack->Peek() == I_IDENTIFIC)
 				{
-					if(peek_condition(*stack_head) == I_EXPRESSION)
-						push_condition(I_IDENTIFIC,stack_head);
+					if(stack->Peek() == I_EXPRESSION)
+						stack->Push(I_IDENTIFIC);
 					break;
 				}
 				else
 				{
-					if(peek_condition(*stack_head) == I_OPERATOR)
+					if(stack->Peek() == I_OPERATOR)
 					{
-						pop_condition(stack_head);
+						stack->Pop();
 						if(p->next!=0)
 							if(p->next->lexem.type != I_BRACKET_CLOSE && p->next->lexem.type != I_COMMA && p->next->lexem.type && I_SEMICOLON && !(p->next->lexem.type >= I_LOW && p->next->lexem.type <= I_DIVISION))
 							{
@@ -146,7 +149,7 @@ void expression_analisis(lexem_list **lex_head,errors_list** er_head,c_stack **s
 							{
 								if(p->next->lexem.type == I_BRACKET_CLOSE)
 								{
-									push_condition(I_OPERATOR,stack_head);
+									stack->Push(I_OPERATOR);
 									break;
 								}
 								else
@@ -164,17 +167,17 @@ void expression_analisis(lexem_list **lex_head,errors_list** er_head,c_stack **s
 			}
 		case(I_INC_MINUS):
 			{
-				if(peek_condition(*stack_head) == I_EXPRESSION || peek_condition(*stack_head) == I_IDENTIFIC)
+				if(stack->Peek() == I_EXPRESSION || stack->Peek() == I_IDENTIFIC)
 				{
-					if(peek_condition(*stack_head) == I_EXPRESSION)
-						push_condition(I_IDENTIFIC,stack_head);
+					if(stack->Peek() == I_EXPRESSION)
+						stack->Push(I_IDENTIFIC);
 					break;
 				}
 				else
 				{
-					if(peek_condition(*stack_head) == I_OPERATOR)
+					if(stack->Peek() == I_OPERATOR)
 					{
-						pop_condition(stack_head);
+						stack->Pop();
 						if(p->next!=0)
 							if(p->next->lexem.type != I_BRACKET_CLOSE && p->next->lexem.type != I_COMMA && p->next->lexem.type && I_SEMICOLON && !(p->next->lexem.type >= I_LOW && p->next->lexem.type <= I_DIVISION))
 							{
@@ -184,7 +187,7 @@ void expression_analisis(lexem_list **lex_head,errors_list** er_head,c_stack **s
 							{
 								if(p->next->lexem.type == I_BRACKET_CLOSE)
 								{
-									push_condition(I_OPERATOR,stack_head);
+									stack->Push(I_OPERATOR);
 									break;
 								}
 								else
@@ -205,10 +208,10 @@ void expression_analisis(lexem_list **lex_head,errors_list** er_head,c_stack **s
 			{
 				if(p->lexem.type >= I_PERCENT && p->lexem.type <= I_DIVISION)
 				{
-					if(peek_condition(*stack_head) == I_OPERATOR)
+					if(stack->Peek() == I_OPERATOR)
 					{
-						pop_condition(stack_head);
-						push_condition(I_IDENTIFIC,stack_head);
+						stack->Pop();
+						stack->Push(I_IDENTIFIC);
 						break;
 					}
 					else
@@ -220,11 +223,12 @@ void expression_analisis(lexem_list **lex_head,errors_list** er_head,c_stack **s
 				{
 					if(p->lexem.type >= I_LOW && p->lexem.line_pos <= I_AND)
 					{
-						if(peek_condition((*stack_head)->next->next->next) == I_IF || peek_condition((*stack_head)->next->next->next) == I_WHILE)
+						int check = stack->Take(4);//3 ссылки от корня
+						if(check == I_IF || check == I_WHILE)
 						{
-							if(peek_condition((*stack_head)->next->next->next) == I_IF)
+							if(check == I_IF)
 							{
-								pop_condition(stack_head);
+								stack->Pop();
 								exit = TRUE;
 								break;
 							}
@@ -232,15 +236,15 @@ void expression_analisis(lexem_list **lex_head,errors_list** er_head,c_stack **s
 							{
 								if(p->lexem.type != I_BLOCK_OPEN)
 								{
-									pop_condition(stack_head);
+									stack->Pop();
 									exit = TRUE;
 									break;
 								}
 								else
 								{
-									pop_condition(stack_head);
-									push_condition(I_EXIT,stack_head);
-									push_condition(I_EXIT,stack_head);
+									stack->Pop();
+									stack->Push(I_EXIT);
+									stack->Push(I_EXIT);
 									move_to_err_list(I_NO_BRACKET_CLOSE,p->lexem.line_pos,er_head);
 									(*lex_head) = p->prew;
 									return;
@@ -249,11 +253,12 @@ void expression_analisis(lexem_list **lex_head,errors_list** er_head,c_stack **s
 						}
 						else
 						{
-							if(peek_condition(*stack_head) == I_OPERATOR)
-								pop_condition(stack_head);
-							if(peek_condition((*stack_head)->next->next) != I_DECLARATION)
+							if(stack->Peek() == I_OPERATOR)
+								stack->Pop();
+							int check = stack->Take(3);//2 ссылки было
+							if(check != I_DECLARATION)
 							{
-								if(peek_condition((*stack_head)->next) != I_FUNCT_ANALISIS)
+								if(stack->Take(2) != I_FUNCT_ANALISIS)
 								{
 									move_to_err_list(I_NO_SEMICOLON,p->lexem.line_pos,er_head);
 									move_to_err_list(I_ERR_IN_EXPRESION,p->lexem.line_pos,er_head);
@@ -280,9 +285,9 @@ void expression_analisis(lexem_list **lex_head,errors_list** er_head,c_stack **s
 		if(p!=0 && !exit)
 			p = p->next;
 	}
-	while(peek_condition(*stack_head) != I_EXPRESSION)
+	while(stack->Peek() != I_EXPRESSION)
 	{
-		switch(peek_condition(*stack_head))
+		switch(stack->Peek())
 		{
 		case(I_BRACKET_CLOSE):
 			{
@@ -290,12 +295,12 @@ void expression_analisis(lexem_list **lex_head,errors_list** er_head,c_stack **s
 				break;
 			}
 		}
-		pop_condition(stack_head);
+		stack->Pop();
 	}
 	(*lex_head) = p;
 }
 
-void bool_expression_analisis(lexem_list **lex_head,errors_list** er_head,c_stack **stack_head)
+void bool_expression_analisis(lexem_list **lex_head,errors_list** er_head,Stack<int>* stack)
 {
 	bool oper = FALSE,exit = FALSE;
 	lexem_list *p = (*lex_head);
@@ -315,11 +320,11 @@ void bool_expression_analisis(lexem_list **lex_head,errors_list** er_head,c_stac
 		{
 		case(I_IDENTIFIC):
 			{
-				if(peek_condition(*stack_head) == I_EXPRESSION)
+				if(stack->Peek() == I_EXPRESSION)
 				{
-					push_condition(I_EXPRESSION,stack_head);
-					expression_analisis(&p,er_head,stack_head,I_BRACKET_CLOSE);
-					pop_condition(stack_head);
+					stack->Push(I_EXPRESSION);
+					expression_analisis(&p,er_head,stack,I_BRACKET_CLOSE);
+					stack->Pop();
 					if(p->lexem.type >= I_LOW && p->lexem.type <= I_NOT_BIGGER)
 					{
 						if(!oper)
@@ -342,9 +347,9 @@ void bool_expression_analisis(lexem_list **lex_head,errors_list** er_head,c_stac
 					}
 					if(p->lexem.type == I_BRACKET_CLOSE)
 						exit = TRUE;
-					if(peek_condition(*stack_head) == I_EXIT)
+					if(stack->Peek() == I_EXIT)
 					{
-						pop_condition(stack_head);
+						stack->Pop();
 						exit = TRUE;
 					}
 				}
@@ -352,9 +357,9 @@ void bool_expression_analisis(lexem_list **lex_head,errors_list** er_head,c_stac
 			}
 		case(I_BRACKET_OPEN):
 			{
-				push_condition(I_EXPRESSION,stack_head);
-				expression_analisis(&p,er_head,stack_head,0);
-				pop_condition(stack_head);
+				stack->Push(I_EXPRESSION);
+				expression_analisis(&p,er_head,stack,0);
+				stack->Pop();
 				if(p->lexem.type >= I_LOW && p->lexem.type <= I_NOT_BIGGER)
 					{
 						if(!oper)
@@ -402,51 +407,51 @@ void bool_expression_analisis(lexem_list **lex_head,errors_list** er_head,c_stac
 	(*lex_head) = p;
 }
 
-void return_analisis(lexem_list **lex_head,errors_list** er_head,c_stack **stack_head)
+void return_analisis(lexem_list** lex_head, errors_list** er_head, Stack<int>* stack)
 {
-	lexem_list *p = (*lex_head);
+	lexem_list* p = (*lex_head);
 
 	bool exit = FALSE;
 
-	while(p!=0 && p->lexem.type != I_SEMICOLON)
+	while (p != 0 && p->lexem.type != I_SEMICOLON)
 	{
-		switch(p->lexem.type)
+		switch (p->lexem.type)
 		{
 		case(I_CONST_WORD):
+		{
+			if (stack->Peek() == I_RETURN)
 			{
-				if(peek_condition(*stack_head) == I_RETURN)
-				{
-					push_condition(I_IDENTIFIC,stack_head);
-				}
-				break;
+				stack->Push(I_IDENTIFIC);
 			}
+			break;
+		}
 		default:
+		{
+			if (stack->Peek() == I_IDENTIFIC)
 			{
-				if(peek_condition(*stack_head) == I_IDENTIFIC)
+				if (p->lexem.type == I_IDENTIFIC || p->lexem.type == I_INC_PLUS || p->lexem.type == I_INC_MINUS || p->lexem.type == I_BRACKET_OPEN)
 				{
-					if(p->lexem.type == I_IDENTIFIC || p->lexem.type == I_INC_PLUS || p->lexem.type == I_INC_MINUS || p->lexem.type == I_BRACKET_OPEN)
+					stack->Pop();
+					stack->Push(I_EXPRESSION);
+					expression_analisis(&p, er_head, stack, I_SEMICOLON);
+					stack->Pop();
+					if (p->lexem.type == I_SEMICOLON)
 					{
-						pop_condition(stack_head);
-						push_condition(I_EXPRESSION,stack_head);
-						expression_analisis(&p,er_head,stack_head,I_SEMICOLON);
-						pop_condition(stack_head);
-						if(p->lexem.type == I_SEMICOLON)
-						{
-							exit = TRUE;
-						}
-						else
-						{
-							move_to_err_list(I_ERR_IN_END_LINE,p->lexem.line_pos,er_head);
-							exit = TRUE;
-						}
+						exit = TRUE;
 					}
 					else
-						move_to_err_list(I_ILLEGAL_EXPRES,p->lexem.line_pos,er_head);
+					{
+						move_to_err_list(I_ERR_IN_END_LINE, p->lexem.line_pos, er_head);
+						exit = TRUE;
+					}
 				}
-				break;
+				else
+					move_to_err_list(I_ILLEGAL_EXPRES, p->lexem.line_pos, er_head);
 			}
+			break;
 		}
-		if(p!= 0 && !exit)
+		}
+		if (p != 0 && !exit)
 			p = p->next;
 	}
 	(*lex_head) = p;

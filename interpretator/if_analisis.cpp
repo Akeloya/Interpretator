@@ -4,9 +4,10 @@
 #include "funct_analisis.h"
 #include "declaration.h"
 #include "while_analisis.h"
+#include "stack.h"
 
 
-void if_analisis(lexem_list **lex_head,errors_list** er_head,c_stack **stack_head)
+void if_analisis(lexem_list **lex_head,errors_list** er_head,Stack<int>* stack)
 {
 	lexem_list *p = (*lex_head);
 
@@ -18,28 +19,28 @@ void if_analisis(lexem_list **lex_head,errors_list** er_head,c_stack **stack_hea
 		{
 		case(I_CONST_WORD):
 			{
-				if(peek_condition(*stack_head) == I_IF)
+				if(stack->Peek() == I_IF)
 				{
 					if(strcmp("if",p->lexem.name) == 0)
 					{
-						push_condition(I_BRACKET_OPEN,stack_head);
+						stack->Push(I_BRACKET_OPEN);
 						break;
 					}
 					if(strcmp("else",p->lexem.name) == 0)
 					{
-						push_condition(I_BLOCK_OPEN,stack_head);
+						stack->Push(I_BLOCK_OPEN);
 						break;
 					}
 				}
-				if(peek_condition(*stack_head) == I_BLOCK_OPEN)
+				if(stack->Peek() == I_BLOCK_OPEN)
 				{
-					pop_condition(stack_head);
+					stack->Pop();
 					if(strcmp("if",p->lexem.name) == 0)
 					{
-						push_condition(I_IF,stack_head);
-						if_analisis(&p,er_head,stack_head);
-						pop_condition(stack_head);
-						if(peek_condition(*stack_head) == I_IF)
+						stack->Push(I_IF);
+						if_analisis(&p,er_head,stack);
+						stack->Pop();
+						if(stack->Peek() == I_IF)
 						{
 							exit = TRUE;
 						}
@@ -47,18 +48,18 @@ void if_analisis(lexem_list **lex_head,errors_list** er_head,c_stack **stack_hea
 					}
 					if(strcmp("while",p->lexem.name) == 0)
 					{
-						push_condition(I_WHILE,stack_head);
-						while_analisis(&p,er_head,stack_head);
-						pop_condition(stack_head);
-						if(peek_condition(*stack_head) == I_IF)
+						stack->Push(I_WHILE);
+						while_analisis(&p,er_head,stack);
+						stack->Pop();
+						if(stack->Peek() == I_IF)
 							exit = TRUE;
 						break;
 					}
 					if(strcmp("return",p->lexem.name) == 0)
 					{
-						push_condition(I_RETURN,stack_head);
-						return_analisis(&p,er_head,stack_head);
-						pop_condition(stack_head);
+						stack->Push(I_RETURN);
+						return_analisis(&p,er_head,stack);
+						stack->Pop();
 					}
 				}
 				printf("ifasefasf");
@@ -66,10 +67,10 @@ void if_analisis(lexem_list **lex_head,errors_list** er_head,c_stack **stack_hea
 			}
 		case(I_BRACKET_OPEN):
 			{
-				if(peek_condition(*stack_head) == I_BRACKET_OPEN)
+				if(stack->Peek() == I_BRACKET_OPEN)
 				{
-					pop_condition(stack_head);
-					push_condition(I_EXPRESSION,stack_head);
+					stack->Pop();
+					stack->Push(I_EXPRESSION);
 					break;
 				}
 				printf("ifasdgfasdvg");
@@ -77,9 +78,9 @@ void if_analisis(lexem_list **lex_head,errors_list** er_head,c_stack **stack_hea
 			}
 		case(I_BRACKET_CLOSE):
 			{
-				if(peek_condition(*stack_head) == I_EXPRESSION)
+				if(stack->Peek() == I_EXPRESSION)
 				{
-					pop_condition(stack_head);
+					stack->Pop();
 					break;
 				}
 				printf("ifasdf");
@@ -87,14 +88,14 @@ void if_analisis(lexem_list **lex_head,errors_list** er_head,c_stack **stack_hea
 			}
 		case(I_BLOCK_OPEN):
 			{
-				if(peek_condition(*stack_head) == I_BLOCK_OPEN)
+				if(stack->Peek() == I_BLOCK_OPEN)
 				{
-					pop_condition(stack_head);
-					push_condition(I_BODY,stack_head);
-					block_analisis(&p,er_head,stack_head,I_BLOCK_CLOSE);
+					stack->Pop();
+					stack->Push(I_BODY);
+					block_analisis(&p,er_head,stack,I_BLOCK_CLOSE);
 					if(p!=0 && p->next!=0 && strcmp(p->next->lexem.name,"else") != 0)
 						exit = TRUE;
-					pop_condition(stack_head);
+					stack->Pop();
 					break;
 				}
 				printf("ifasdfgasdfg");
@@ -102,43 +103,43 @@ void if_analisis(lexem_list **lex_head,errors_list** er_head,c_stack **stack_hea
 			}
 		case(I_IDENTIFIC):
 			{
-				if(peek_condition(*stack_head) == I_EXPRESSION)
+				if(stack->Peek() == I_EXPRESSION)
 				{
-					bool_expression_analisis(&p,er_head,stack_head);
-					pop_condition(stack_head);
-					push_condition(I_BLOCK_OPEN,stack_head);
+					bool_expression_analisis(&p,er_head,stack);
+					stack->Pop();
+					stack->Push(I_BLOCK_OPEN);
 				}
 				else
 				{
-					if(peek_condition(*stack_head) == I_BLOCK_OPEN)
+					if(stack->Peek() == I_BLOCK_OPEN)
 					{
-						pop_condition(stack_head);
+						stack->Pop();
 						if(p->next!=0 && p->next->lexem.type == I_ASSIGNMENT)
 						{
-							push_condition(I_ASSIGNMENT,stack_head);
-							assignment_analisis(&p,er_head,stack_head);
-							pop_condition(stack_head);
+							stack->Push(I_ASSIGNMENT);
+							assignment_analisis(&p,er_head,stack);
+							stack->Pop();
 							if(p->next!=0 && strcmp(p->next->lexem.name,"else") != 0)
 								exit = TRUE;
 							break;
 						}
 						if(p->next!=0 && p->next->lexem.type == I_BRACKET_OPEN)
 						{
-							push_condition(I_FUNCT_ANALISIS,stack_head);
-							funct_inline_analisis(&p,er_head,stack_head);
-							pop_condition(stack_head);
+							stack->Push(I_FUNCT_ANALISIS);
+							funct_inline_analisis(&p,er_head,stack);
+							stack->Pop();
 							if(p!=0 && p->next!=0 && strcmp(p->next->lexem.name,"else") != 0)
 								exit = TRUE;
 							break;
 						}
-						printf("ifasvasdv");
+						//printf("ifasvasdv");
 					}
 				}
 				break;
 			}
 		default:
 			{
-				printf("ifasdvasdfasdvasdfasdf");
+				//printf("ifasdvasdfasdvasdfasdf");
 				break;
 			}
 		}
