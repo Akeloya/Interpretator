@@ -11,12 +11,12 @@ The project was implemented as a course work for interpreters of programming lan
 - Data structures and algorithms for language parsing
 - Data structures and algorithms for interpreting the language and displaying (output) the results of the application
 
-### Results
+## Results
 
 As a defense of the course project, the student, together with the teacher, determined test cases sufficient to protect the work on the exam. The main test used to protect the project was selected algorithm for finding prime numbers.
 
-#### Code quality
+## Code quality
 
 The college subjects did not include code design courses, project management, testing, and other disciplines that study code quality. Therefore, the original version of the interpreter has a terrible code structure, despite the fact that test cases are executed correctly.
 
-#### Future Project Development
+## Future Project Development
