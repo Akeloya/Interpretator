@@ -1,4 +1,4 @@
-![License: MIT](https://img.shields.io/github/license/Akeloya/interpretator)
+[![License: MIT](https://img.shields.io/github/license/Akeloya/interpretator)](https://github.com/Akeloya/Interpretator/blob/master/LICENSE)
 [![GitHub release](https://img.shields.io/github/v/release/Akeloya/Interpretator.svg)](https://github.com/Akeloya/Interpretator/releases/latest)
 
 # Interpretator
