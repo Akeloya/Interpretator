@@ -39,11 +39,15 @@
     <ClInclude Include="lexem_analisis.h" />
     <ClInclude Include="list.h" />
     <ClInclude Include="main.h" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="syntax_analisis.h" />
     <ClInclude Include="while_analisis.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="prost.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="interpretator.rc" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{D89192CE-5623-42C2-985F-3CFE98D5B0D7}</ProjectGuid>
