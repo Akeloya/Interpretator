@@ -2,7 +2,7 @@ int main()
 {
 	int i = 0,j = 0,a = 0;
 	i = 3;
-	while (i<18)
+	while (i<180)
 	{
 		j = 2;
 		a = 0;

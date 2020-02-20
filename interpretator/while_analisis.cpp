@@ -4,7 +4,7 @@
 #include "if_analisis.h"
 #include "funct_analisis.h"
 
-void while_analisis(lexem_list **lex_head,errors_list** er_head,c_stack **stack_head)
+void while_analisis(lexem_list **lex_head,errors_list** er_head,Stack<int>* stack)
 {
 	lexem_list *p = (*lex_head);
 	
@@ -16,37 +16,37 @@ void while_analisis(lexem_list **lex_head,errors_list** er_head,c_stack **stack_
 		{
 		case(I_CONST_WORD):
 			{
-				if(peek_condition(*stack_head) == I_WHILE)
+				if(stack->Peek() == I_WHILE)
 				{
-					push_condition(I_BRACKET_OPEN,stack_head);
+					stack->Push(I_BRACKET_OPEN);
 					break;
 				}
-				if(peek_condition(*stack_head) == I_BLOCK_OPEN)
+				if(stack->Peek() == I_BLOCK_OPEN)
 				{
-					pop_condition(stack_head);
+					stack->Pop();
 					if(strcmp("if",p->lexem.name) == 0)
 					{
-						push_condition(I_IF,stack_head);
-						if_analisis(&p,er_head,stack_head);
-						pop_condition(stack_head);
-						if(peek_condition(*stack_head) == I_WHILE)
+						stack->Push(I_IF);
+						if_analisis(&p,er_head,stack);
+						stack->Pop();
+						if(stack->Peek() == I_WHILE)
 							exit = TRUE;
 						break;
 					}
 					if(strcmp("while",p->lexem.name) == 0)
 					{
-						push_condition(I_WHILE,stack_head);
-						while_analisis(&p,er_head,stack_head);
-						pop_condition(stack_head);
-						if(peek_condition(*stack_head) == I_WHILE)
+						stack->Push(I_WHILE);
+						while_analisis(&p,er_head,stack);
+						stack->Pop();
+						if(stack->Peek() == I_WHILE)
 							exit = TRUE;
 						break;
 					}
 					if(strcmp("return",p->lexem.name) == 0)
 					{
-						push_condition(I_RETURN,stack_head);
-						return_analisis(&p,er_head,stack_head);
-						pop_condition(stack_head);
+						stack->Push(I_RETURN);
+						return_analisis(&p,er_head,stack);
+						stack->Pop();
 					}
 					break;
 				}
@@ -55,17 +55,17 @@ void while_analisis(lexem_list **lex_head,errors_list** er_head,c_stack **stack_
 			}
 		case(I_BRACKET_OPEN):
 			{
-				if(peek_condition(*stack_head) == I_BRACKET_OPEN)
+				if(stack->Peek() == I_BRACKET_OPEN)
 				{
-					pop_condition(stack_head);
-					push_condition(I_EXPRESSION,stack_head);
+					stack->Pop();
+					stack->Push(I_EXPRESSION);
 					break;
 				}
-				if(peek_condition(*stack_head) == I_EXPRESSION)
+				if(stack->Peek() == I_EXPRESSION)
 				{
-					bool_expression_analisis(&p,er_head,stack_head);
-					pop_condition(stack_head);
-					push_condition(I_BLOCK_OPEN,stack_head);
+					bool_expression_analisis(&p,er_head,stack);
+					stack->Pop();
+					stack->Push(I_BLOCK_OPEN);
 					break;
 				}
 				printf("while");
@@ -73,10 +73,10 @@ void while_analisis(lexem_list **lex_head,errors_list** er_head,c_stack **stack_
 			}
 		case(I_BRACKET_CLOSE):
 			{
-				if(peek_condition(*stack_head) == I_BRACKET_CLOSE)
+				if(stack->Peek() == I_BRACKET_CLOSE)
 				{
-					pop_condition(stack_head);
-					push_condition(I_BLOCK_OPEN,stack_head);
+					stack->Pop();
+					stack->Push(I_BLOCK_OPEN);
 					break;
 				}
 				printf("while");
@@ -84,28 +84,28 @@ void while_analisis(lexem_list **lex_head,errors_list** er_head,c_stack **stack_
 			}
 		case(I_IDENTIFIC):
 			{
-				if(peek_condition(*stack_head) == I_EXPRESSION)
+				if(stack->Peek() == I_EXPRESSION)
 				{
-					bool_expression_analisis(&p,er_head,stack_head);
-					pop_condition(stack_head);
-					push_condition(I_BLOCK_OPEN,stack_head);
+					bool_expression_analisis(&p,er_head,stack);
+					stack->Pop();
+					stack->Push(I_BLOCK_OPEN);
 					break;
 				}
-				if(peek_condition(*stack_head) == I_BODY)
+				if(stack->Peek() == I_BODY)
 				{
-					block_analisis(&p,er_head,stack_head,I_BLOCK_CLOSE);
-					pop_condition(stack_head);
+					block_analisis(&p,er_head,stack,I_BLOCK_CLOSE);
+					stack->Pop();
 					exit = TRUE;
 					break;
 				}
-				if(peek_condition(*stack_head) == I_BLOCK_OPEN)
+				if(stack->Peek() == I_BLOCK_OPEN)
 				{
-					pop_condition(stack_head);
+					stack->Pop();
 					if(p->next->lexem.type == I_BRACKET_OPEN)
 					{
-						push_condition(I_FUNCT_ANALISIS,stack_head);
-						funct_inline_analisis(&p,er_head,stack_head);
-						pop_condition(stack_head);
+						stack->Push(I_FUNCT_ANALISIS);
+						funct_inline_analisis(&p,er_head,stack);
+						stack->Pop();
 						exit = TRUE;
 						break;
 					}
@@ -115,12 +115,12 @@ void while_analisis(lexem_list **lex_head,errors_list** er_head,c_stack **stack_
 			}
 		case(I_BLOCK_OPEN):
 			{
-				if(peek_condition(*stack_head) == I_BLOCK_OPEN)
+				if(stack->Peek() == I_BLOCK_OPEN)
 				{
-					pop_condition(stack_head);
-					push_condition(I_BODY,stack_head);
-					block_analisis(&p,er_head,stack_head,I_BLOCK_CLOSE);
-					pop_condition(stack_head);
+					stack->Pop();
+					stack->Push(I_BODY);
+					block_analisis(&p,er_head,stack,I_BLOCK_CLOSE);
+					stack->Pop();
 					exit = TRUE;
 					break;
 				}

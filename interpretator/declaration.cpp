@@ -1,8 +1,8 @@
 #include "declaration.h"
-//#include "body_analisis.h"
 #include "expression_analisis.h"
+#include "stack.h"
 
-void declaration_analisis(lexem_list **lex_head,errors_list** er_head,c_stack **stack_head)
+void declaration_analisis(lexem_list **lex_head,errors_list** er_head,Stack<int>* stack)
 {
 	lexem_list *p = (*lex_head);
 
@@ -14,9 +14,9 @@ void declaration_analisis(lexem_list **lex_head,errors_list** er_head,c_stack **
 		{
 		case(I_CONST_WORD):
 			{
-				if(peek_condition(*stack_head) == I_DECLARATION)
+				if(stack->Peek() == I_DECLARATION)
 				{
-					push_condition(I_IDENTIFIC,stack_head);
+					stack->Push(I_IDENTIFIC);
 					break;
 				}
 				else
@@ -27,21 +27,21 @@ void declaration_analisis(lexem_list **lex_head,errors_list** er_head,c_stack **
 			}
 		case(I_IDENTIFIC):
 			{
-				if(peek_condition(*stack_head) == I_IDENTIFIC)
+				if(stack->Peek() == I_IDENTIFIC)
 				{
-					pop_condition(stack_head);
+					stack->Pop();
 					if(p->next != 0)
 					{
 						if(p->next->lexem.type == I_ASSIGNMENT)
 						{
-							push_condition(I_ASSIGNMENT,stack_head);
-							assignment_analisis(&p,er_head,stack_head);
-							pop_condition(stack_head);
+							stack->Push(I_ASSIGNMENT);
+							assignment_analisis(&p,er_head,stack);
+							stack->Pop();
 							if(p->lexem.type == I_COMMA)
-								push_condition(I_IDENTIFIC,stack_head);
+								stack->Push(I_IDENTIFIC);
 							if(p->lexem.type == I_SEMICOLON)
 							{
-								//push_condition(I_SEMICOLON,stack_head);
+								//stack->Push(I_SEMICOLON,stack_head);
 								exit = TRUE;
 								break;
 							}
@@ -50,12 +50,12 @@ void declaration_analisis(lexem_list **lex_head,errors_list** er_head,c_stack **
 						{
 							if(p->next->lexem.type == I_SEMICOLON)
 							{
-								push_condition(I_SEMICOLON,stack_head);
+								stack->Push(I_SEMICOLON);
 								break;
 							}
 							if(p->next->lexem.type == I_COMMA)
 							{
-								push_condition(I_IDENTIFIC,stack_head);
+								stack->Push(I_IDENTIFIC);
 								break;
 							}
 						}
@@ -65,18 +65,18 @@ void declaration_analisis(lexem_list **lex_head,errors_list** er_head,c_stack **
 			}
 		case(I_COMMA):
 			{
-				if(peek_condition(*stack_head) == I_SEMICOLON)
+				if(stack->Peek() == I_SEMICOLON)
 				{
-					pop_condition(stack_head);
-					push_condition(I_IDENTIFIC,stack_head);
+					stack->Pop();
+					stack->Push(I_IDENTIFIC);
 				}
 				break;
 			}
 		case(I_SEMICOLON):
 			{
-				if(peek_condition(*stack_head) == I_SEMICOLON)
+				if(stack->Peek() == I_SEMICOLON)
 				{
-					pop_condition(stack_head);
+					stack->Pop();
 				}
 				else
 					move_to_err_list(I_ERR_IN_END_LINE,p->lexem.line_pos,er_head);
@@ -91,98 +91,98 @@ void declaration_analisis(lexem_list **lex_head,errors_list** er_head,c_stack **
 		if(p!=0 && !exit)
 			p = p->next;
 	}
-	if(peek_condition(*stack_head) != I_DECLARATION)
+	if(stack->Peek() != I_DECLARATION)
 	{
 		int cond = 0;
-		while((cond = peek_condition(*stack_head)) != I_DECLARATION)
+		while((cond = stack->Peek()) != I_DECLARATION)
 		{
 			if(cond == I_SEMICOLON)
 				move_to_err_list(I_NO_IDENTIFICATOR,p->lexem.line_pos,er_head);
-			pop_condition(stack_head);
+			stack->Pop();
 		}
 	}
 	(*lex_head) = p;
 }
 
 
-void assignment_analisis(lexem_list **lex_head,errors_list ** er_head,c_stack ** stack_head)
+void assignment_analisis(lexem_list** lex_head, errors_list** er_head, Stack<int>* stack)
 {
-	lexem_list *p = (*lex_head);
+	lexem_list* p = (*lex_head);
 
 	bool exit = FALSE;
 
-	while(p != 0 && !exit)
+	while (p != 0 && !exit)
 	{
-		switch(p->lexem.type)
+		switch (p->lexem.type)
 		{
 		case(I_IDENTIFIC):
+		{
+			if (stack->Peek() == I_ASSIGNMENT)
 			{
-				if(peek_condition(*stack_head) == I_ASSIGNMENT)
-				{
-					push_condition(I_ASSIGNMENT,stack_head);
-					break;
-				}
-				if(peek_condition(*stack_head) == I_IDENTIFIC)
-				{
-					pop_condition(stack_head);
-					push_condition(I_EXPRESSION,stack_head);
-					expression_analisis(&p,er_head,stack_head,I_SEMICOLON);
-					exit = TRUE;
-					pop_condition(stack_head);
-				}
+				stack->Push(I_ASSIGNMENT);
 				break;
 			}
-		case(I_ASSIGNMENT):
+			if (stack->Peek() == I_IDENTIFIC)
 			{
-				if(peek_condition(*stack_head) == I_ASSIGNMENT)
-				{
-					pop_condition(stack_head);
-					push_condition(I_IDENTIFIC,stack_head);
-				}
-				break;
+				stack->Pop();
+				stack->Push(I_EXPRESSION);
+				expression_analisis(&p, er_head, stack, I_SEMICOLON);
+				exit = TRUE;
+				stack->Pop();
 			}
-		case(I_INC_MINUS):
-			{
-				if(peek_condition(*stack_head) == I_IDENTIFIC)
-				{
-					pop_condition(stack_head);
-					push_condition(I_EXPRESSION,stack_head);
-					expression_analisis(&p,er_head,stack_head,I_SEMICOLON);
-					exit = TRUE;
-					pop_condition(stack_head);
-				}
-				break;
-			}
-		case(I_INC_PLUS):
-			{
-				if(peek_condition(*stack_head) == I_IDENTIFIC)
-				{
-					pop_condition(stack_head);
-					push_condition(I_EXPRESSION,stack_head);
-					expression_analisis(&p,er_head,stack_head,I_SEMICOLON);
-					exit = TRUE;
-					pop_condition(stack_head);
-				}
-				break;
-			}
-		case(I_BRACKET_OPEN):
-			{
-				if(peek_condition(*stack_head) == I_IDENTIFIC)
-				{
-					pop_condition(stack_head);
-					push_condition(I_EXPRESSION,stack_head);
-					expression_analisis(&p,er_head,stack_head,I_SEMICOLON);
-					exit = TRUE;
-					pop_condition(stack_head);
-				}
-				break;
-			}
-		default:
-			{
-				break;
-			}
+			break;
 		}
-		if(!exit)
+		case(I_ASSIGNMENT):
+		{
+			if (stack->Peek() == I_ASSIGNMENT)
+			{
+				stack->Pop();
+				stack->Push(I_IDENTIFIC);
+			}
+			break;
+		}
+		case(I_INC_MINUS):
+		{
+			if (stack->Peek() == I_IDENTIFIC)
+			{
+				stack->Pop();
+				stack->Push(I_EXPRESSION);
+				expression_analisis(&p, er_head, stack, I_SEMICOLON);
+				exit = TRUE;
+				stack->Pop();
+			}
+			break;
+		}
+		case(I_INC_PLUS):
+		{
+			if (stack->Peek() == I_IDENTIFIC)
+			{
+				stack->Pop();
+				stack->Push(I_EXPRESSION);
+				expression_analisis(&p, er_head, stack, I_SEMICOLON);
+				exit = TRUE;
+				stack->Pop();
+			}
+			break;
+		}
+		case(I_BRACKET_OPEN):
+		{
+			if (stack->Peek() == I_IDENTIFIC)
+			{
+				stack->Pop();
+				stack->Push(I_EXPRESSION);
+				expression_analisis(&p, er_head, stack, I_SEMICOLON);
+				exit = TRUE;
+				stack->Pop();
+			}
+			break;
+		}
+		default:
+		{
+			break;
+		}
+		}
+		if (!exit)
 			p = p->next;
 	}
 	(*lex_head) = p;

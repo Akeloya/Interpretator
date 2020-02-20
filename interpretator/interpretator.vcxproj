@@ -23,6 +23,7 @@
     <ClCompile Include="lexem_snalisis.cpp" />
     <ClCompile Include="list.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Stack.cpp" />
     <ClCompile Include="syntax_analisis.cpp" />
     <ClCompile Include="while_analisis.cpp" />
   </ItemGroup>
@@ -40,6 +41,7 @@
     <ClInclude Include="list.h" />
     <ClInclude Include="main.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="Stack.h" />
     <ClInclude Include="syntax_analisis.h" />
     <ClInclude Include="while_analisis.h" />
   </ItemGroup>

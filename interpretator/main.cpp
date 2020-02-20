@@ -6,6 +6,8 @@
 #include "syntax_analisis.h"
 #include <conio.h>
 #include "execute.h"
+#include "Stack.h"
+#include "Stack.cpp"
 
 using namespace std;
 
@@ -15,7 +17,7 @@ int main(int argv,char *argc[])
 	char c = 0;
 	lexem_list *lex_head = 0;
 
-	c_stack *stack_head = 0;
+	Stack<int> *stack = new Stack<int>();
 
 	errors_list * er_head = 0;
 
@@ -87,13 +89,13 @@ int main(int argv,char *argc[])
 			fclose(fin);
 			return 0;
 		}
-		push_condition(I_PROGRAMM,&stack_head);
+		stack->Push(I_PROGRAMM);
 	
-		syntax_analisis(lex_head,&stack_head,&var_list,&er_head);
+		syntax_analisis(lex_head,stack,&var_list,&er_head);
 	
-		if(peek_condition(stack_head) == I_PROGRAMM)
+		if(stack->Peek() == I_PROGRAMM)
 		{
-			pop_condition(&stack_head);
+			stack->Pop();
 			cout<<"syntax analisys secces."<<endl;
 		}
 		else
@@ -174,7 +176,8 @@ int main(int argv,char *argc[])
 	}
 	catch(char* ex)
 	{
-		cout<<ex<<endl;
+		cout<<ex<<endl;	
+		stack->~Stack();
 	}
 	return 0;
 }
