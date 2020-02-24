@@ -3,6 +3,14 @@
 
 # Interpretator
 My college project when I was 17 years old (3-rd course HCI NSU). The project implements a C-like language syntax that is interpreted and executed by the application.
+Мой семестровый проект в ВКИ НГУ в 17 лет (3 курс). Проект реализует C-подобный синтаксис языка, интерпретируемый и выполняемый в приложении
+
+## Table of contents (Содержание)
+- English
+-- Perpose
+-- Results
+-- Code quality
+-- Future Project Development
 
 ## Perpose
 
@@ -20,3 +28,5 @@ As a defense of the course project, the student, together with the teacher, dete
 The college subjects did not include code design courses, project management, testing, and other disciplines that study code quality. Therefore, the original version of the interpreter has a terrible code structure, despite the fact that test cases are executed correctly.
 
 ## Future Project Development
+- Improve code quality.
+- Write english and russian description interpreteter development stages

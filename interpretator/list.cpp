@@ -1,5 +1,118 @@
 #include "list.h"
 
+template<typename T>
+List<T>::List() 
+{
+	_root = new listItem();
+	_root->next = nullptr;
+	_root->prev = nullptr;
+	_last = root;
+}
+
+template<typename T>
+List<T>::~List()
+{
+	for (int i = 0; i < Count(); i++)
+		RemoveAt(0);
+	delete _root;
+}
+
+template<typename T>
+int List<T>::Count()
+{
+	listItem* curr = _root;
+	int count = 0;
+	for (; curr->next != nullptr; count++)
+		curr = curr->next;
+	return count;
+}
+
+template<typename T>
+void List<T>::Add(T value)
+{
+	if (root->next == nullptr && root->prev == nullptr)
+	{
+		root->value = value;
+		return;
+	}
+
+	listItem* item = new listItem();
+	item->value = value;
+	item->next = nullptr;
+	_last->next = item;
+	item->prev - _last;
+	_last = item;
+}
+
+template<typename T>
+int List<T>::IndexOf(T value)
+{
+	int index = -1;
+	bool finded = false;
+	listItem* curr = _root;
+	while (curr != _last)
+	{
+		index++;
+		if (curr->value == value)
+		{
+			finded = true;
+			break;
+		}
+		curr = curr->next;		
+	}
+	if (finded)
+		return index;
+	return -1;
+}
+
+template<typename T>
+void List<T>::Remove(T value)
+{
+	listItem* curr = _root;
+	while (curr->value != value && curr != _last)
+		curr = curr->next;
+	if (curr->value == value)
+	{
+		if (curr->prev != nullptr)
+		{
+			curr->prev->next = curr->next;
+		}
+		if (curr->next != nullptr)
+		{
+			curr->next->prev = curr->prev;
+		}
+		delete curr;
+	}
+}
+
+template<typename T>
+void List<T>::InsertAt(T value, int index)
+{
+	listItem* curr = getIndexOf(index);
+
+	if (curr == nullptr)
+		retun;
+	listItem* newItem = new listItem();
+	newItem->value = value;
+	newItem->next = curr;
+	newitem->prev = curr->prev;
+}
+
+template<typename T>
+void List<T>::RemoveAt(int index)
+{
+	listItem * curr = getIndexOf(index);
+
+	if (curr == nullptr)
+		return;
+	if (curr->prev != nullptr)
+		curr->prev->next = curr->next;
+
+	if (curr->next != nullptr)
+		curr->next->prev = curr->prev;
+	delete curr;
+}
+
 void move_to_list(Lexem sLexem,struct lexem_list **head)
 {
 	lexem_list * p =(lexem_list*)malloc(sizeof(lexem_list));
