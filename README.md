@@ -7,18 +7,18 @@ My college project when I was 17 years old (3-rd course HCI NSU). The project im
 
 ## Table of contents (Содержание)
 - English
-  - [Perpose][Perpose]
-  - [Results][Results]
-  - [Code quality][Code quality]
-  - [Future Project Development][Future Project Development]
-  - [Algorythm for search prime numbers][Algorythm for search prime numbers]
+  - [Perpose](#Perpose)
+  - [Results](#Results)
+  - [Code quality](#Code-quality)
+  - [Future Project Development](#Future-Project-Development)
+  - [Algorythm for search prime numbers](#Algorythm-for-search-prime-numbers)
 
 - Русский
-  - [Цель][Цель]
-  - [Результаты][Результаты]
-  - [Качество кода][Качество кода]
-  - [Будущие изменения][Будущие изменения]
-  - [Алгоритм поиска проистых чисел][Algorythm for search prime numbers]
+  - [Цель](#Цель)
+  - [Результаты](#Результаты)
+  - [Качество кода](#Качество-кода)
+  - [Будущие изменения](#Будущие-изменения)
+  - [Алгоритм поиска проистых чисел](#Algorythm-for-search-prime-number)
 
 ## Perpose
 
