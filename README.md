@@ -18,7 +18,7 @@ My college project when I was 17 years old (3-rd course HCI NSU). The project im
   - [Результаты](#Результаты)
   - [Качество кода](#Качество-кода)
   - [Будущие изменения](#Будущие-изменения)
-  - [Алгоритм поиска проистых чисел](#Algorythm-for-search-prime-number)
+  - [Алгоритм поиска проистых чисел](#Algorythm-for-search-prime-numbers)
 
 ## Perpose
 
