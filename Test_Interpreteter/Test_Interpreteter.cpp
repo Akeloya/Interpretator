@@ -2,6 +2,8 @@
 #include "CppUnitTest.h"
 #include "../interpretator/Stack.h"
 #include "../interpretator/Stack.cpp"
+#include "../interpretator/list.h"
+#include "../interpretator/list.cpp"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
@@ -11,7 +13,7 @@ namespace TestInterpreteter
 	{
 	public:
 		
-		TEST_METHOD(TestMethod1)
+		TEST_METHOD(TestStack)
 		{
 			Stack<int>* stack = new Stack<int>();
 			for (int i = 0; i < 1000; i++)
@@ -28,6 +30,35 @@ namespace TestInterpreteter
 				stack->Pop();
 			}
 			stack->~Stack();
+		}
+
+		TEST_METHOD(TestList)
+		{
+			List<int>* list = new List<int>();
+			for (int i = 0; i < 1000; i++)
+			{
+				list->Add(i);
+				Assert::AreEqual(i, list->IndexOf(i));
+			}
+			Assert::AreEqual(1000, list->Count());
+
+			for (int i = 0; list->Count(); i++)
+				list->RemoveAt(0);
+
+			Assert::AreEqual(0, list->Count());
+			list->~List();
+
+			list = new List<int>();
+			for (int i = 0; i < 100; i++)
+			{
+				list->Add(i);
+				Assert::AreEqual(i, list->IndexOf(i));
+			}			
+			for (int i = 0; list->Count(); i++)
+				list->Remove(i);
+
+			Assert::AreEqual(0, list->Count());
+			list->~List();
 		}
 	};
 }
