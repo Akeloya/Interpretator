@@ -53,7 +53,7 @@ T Stack<T>::Take(int takenDepth)
 	if (takenDepth > _depth)
 		return (T)nullptr;
 	stackItem* curr = _stack;
-	for (int i = 0; i < _depth; i++)
+	for (int i = 0; i < takenDepth; i++)
 		curr = curr->next;
 	return curr->Value;
 }

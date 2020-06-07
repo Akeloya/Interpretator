@@ -3,10 +3,8 @@
 template<typename T>
 List<T>::List() 
 {
-	_root = new listItem();
-	_root->next = nullptr;
-	_root->prev = nullptr;
-	_last = root;
+	_root = nullptr;
+	_last = _root;
 }
 
 template<typename T>
@@ -30,17 +28,19 @@ int List<T>::Count()
 template<typename T>
 void List<T>::Add(T value)
 {
-	if (root->next == nullptr && root->prev == nullptr)
+	if (_root == nullptr)
 	{
-		root->value = value;
+		_root = new listItem();
+		_root->Value = value;	
+		_last = _root;
 		return;
 	}
 
 	listItem* item = new listItem();
-	item->value = value;
+	item->Value = value;
 	item->next = nullptr;
 	_last->next = item;
-	item->prev - _last;
+	item->prev = _last;
 	_last = item;
 }
 
@@ -53,7 +53,7 @@ int List<T>::IndexOf(T value)
 	while (curr != _last)
 	{
 		index++;
-		if (curr->value == value)
+		if (curr->Value == value)
 		{
 			finded = true;
 			break;
@@ -69,9 +69,9 @@ template<typename T>
 void List<T>::Remove(T value)
 {
 	listItem* curr = _root;
-	while (curr->value != value && curr != _last)
+	while (curr->Value != value && curr != _last)
 		curr = curr->next;
-	if (curr->value == value)
+	if (curr->Value == value)
 	{
 		if (curr->prev != nullptr)
 		{
