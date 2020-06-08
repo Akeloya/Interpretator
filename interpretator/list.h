@@ -24,7 +24,7 @@ private:
 	listItem* getIndexOf(int index)
 	{
 		listItem* curr = _root;
-		int cout = 0;
+		int count = 0;
 		while (count < index && curr != nullptr)
 		{
 			curr = curr->next;
@@ -40,5 +40,6 @@ public:
 	void InsertAt(T value, int index);
 	int IndexOf(T value);
 	int Count();
+	T& operator[](const int idx);
 	~List();
 };

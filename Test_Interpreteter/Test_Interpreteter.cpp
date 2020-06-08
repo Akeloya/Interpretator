@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "CppUnitTest.h"
+#include <stdlib.h>
 #include "../interpretator/Stack.h"
 #include "../interpretator/Stack.cpp"
 #include "../interpretator/list.h"
@@ -58,6 +59,19 @@ namespace TestInterpreteter
 				list->Remove(i);
 
 			Assert::AreEqual(0, list->Count());
+			list->~List();
+		}
+
+		TEST_METHOD(TestListRandValue)
+		{
+			List<int>* list = new List<int>();
+			srand(10000);
+			for (int i = 0; i < 1000; i++)
+			{
+				int val = rand();
+				list->Add(val);				
+				Assert::AreEqual(val, (*list)[i]);
+			}
 			list->~List();
 		}
 	};
