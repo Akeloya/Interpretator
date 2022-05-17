@@ -107,8 +107,16 @@
     <ClInclude Include="Stack.h">
       <Filter>Заголовочные файлы</Filter>
     </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>Заголовочные файлы</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="prost.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="interpretator.rc">
+      <Filter>Файлы ресурсов</Filter>
+    </ResourceCompile>
   </ItemGroup>
 </Project>

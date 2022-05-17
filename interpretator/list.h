@@ -13,6 +13,7 @@ template<typename T>
 class List
 {
 private:
+	int _count;
 	struct listItem {
 	public:
 		listItem* next;

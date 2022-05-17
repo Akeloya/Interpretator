@@ -5,6 +5,7 @@ List<T>::List()
 {
 	_root = nullptr;
 	_last = _root;
+	_count = 0;
 }
 
 template<typename T>
@@ -18,8 +19,10 @@ List<T>::~List()
 template<typename T>
 int List<T>::Count()
 {
+	if (_root == nullptr)
+		return 0;
 	listItem* curr = _root;
-	int count = 0;
+	int count = curr != nullptr ? 1 : 0;
 	for (; curr->next != nullptr; count++)
 		curr = curr->next;
 	return count;
@@ -38,7 +41,6 @@ void List<T>::Add(T value)
 
 	listItem* item = new listItem();
 	item->Value = value;
-	item->next = nullptr;
 	_last->next = item;
 	item->prev = _last;
 	_last = item;
@@ -50,7 +52,7 @@ int List<T>::IndexOf(T value)
 	int index = -1;
 	bool finded = false;
 	listItem* curr = _root;
-	while (curr != _last)
+	while (curr != nullptr)
 	{
 		index++;
 		if (curr->Value == value)
@@ -69,20 +71,32 @@ template<typename T>
 void List<T>::Remove(T value)
 {
 	listItem* curr = _root;
-	while (curr->Value != value && curr != _last)
+	while (curr != nullptr && curr->Value != value)
 		curr = curr->next;
-	if (curr->Value == value)
+
+	if (curr == nullptr || curr->Value != value)
+		return;
+
+	if (curr->prev != nullptr)
 	{
-		if (curr->prev != nullptr)
-		{
-			curr->prev->next = curr->next;
-		}
-		if (curr->next != nullptr)
-		{
-			curr->next->prev = curr->prev;
-		}
-		delete curr;
+		curr->prev->next = curr->next;
 	}
+	bool rootIsCurr = _root == curr;
+	bool rootChanged = false;
+	
+	if (_root->next != nullptr)
+	{
+		_root = _root->next;
+		rootChanged = true;
+	}
+
+	if (curr->next != nullptr)
+	{
+		curr->next->prev = curr->prev;
+	}
+	delete curr;
+	if (rootIsCurr && !rootChanged)
+		_root = nullptr;
 }
 
 template<typename T>
@@ -108,9 +122,20 @@ void List<T>::RemoveAt(int index)
 	if (curr->prev != nullptr)
 		curr->prev->next = curr->next;
 
+	bool rootIsCurr = curr == _root;
+	bool rootChanged = false;
+	
+	if (_root->next != nullptr)
+	{
+		_root = _root->next;
+		rootChanged = true;
+	}
+
 	if (curr->next != nullptr)
 		curr->next->prev = curr->prev;
 	delete curr;
+	if (rootIsCurr && !rootChanged)
+		_root = nullptr;
 }
 
 void move_to_list(Lexem sLexem,struct lexem_list **head)
