@@ -6,4 +6,6 @@
 #include "list.h"
 #include "Stack.h"
 
+using namespace Interpreter::Collections;
+
 void if_analisis(lexem_list **lex_head,errors_list** er_head,Stack<int>* stack);

@@ -2,6 +2,8 @@
 #include "Stack.h"
 #include "Stack.cpp"
 
+using namespace Interpreter::Collections;
+
 void expression_analisis(lexem_list **lex_head,errors_list** er_head,Stack<int>* stack, int exit_code)
 {
 	lexem_list *p = (*lex_head);

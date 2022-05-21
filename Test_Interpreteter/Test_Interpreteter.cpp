@@ -6,6 +6,7 @@
 #include "../interpretator/list.cpp"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
+using namespace Interpreter::Collections;
 
 namespace TestInterpreteter
 {
@@ -52,6 +53,18 @@ namespace TestInterpreteter
 			for (int i = 0; i < 1000; i++)
 				list->Add(i);
 			Assert::AreEqual(1000, list->Count());
+			
+			Iterator<int> iterator = list->GetIterator();
+
+			int check = 0;
+			while (iterator.MoveNext()) 
+			{
+				Assert::AreEqual(check++, iterator.Get());
+			} 
+			for (Iterator<int> it = list->GetIterator(); it.MoveNext();) 
+			{
+				Assert::AreEqual(check++, iterator.Get());
+			}
 			list->~List();
 		}
 	};

@@ -4,6 +4,8 @@
 #include "condition_stack.h"
 #include "Stack.h"
 
+using namespace Interpreter::Collections;
+
 void expression_analisis(lexem_list **lex_head,errors_list** er_head,Stack<int>* stack,int exit_code);
 
 void bool_expression_analisis(lexem_list **lex_head,errors_list** er_head,Stack<int>* stack);
