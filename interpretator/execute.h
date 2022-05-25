@@ -46,25 +46,25 @@ void last_block_checkout(execute *root,errors_list **er_head,errors_list **war_h
 
 int do_execute(execute *root,errors_list **er_head,errors_list **war_head,_lists **list);
 
-bool add_to_var_list(varible_list** vl,Lexem lexem,int type);
+bool add_to_var_list(lexem_list** vl,Lexem lexem,int type);
 
-Lexem* in_var_list(varible_list* vl,Lexem lexem);
+Lexem* in_var_list(lexem_list* vl,Lexem lexem);
 
 bool add_to_funct_list(funct_list** fl,Lexem *lex_head,int nParam);
 
 int type_expression(lexem_list *lex_head);
 
-bool check_expression(lexem_list * p,varible_list* l,errors_list** er_head);
+bool check_expression(lexem_list * p,lexem_list* l,errors_list** er_head);
 
 void assignment(Lexem *lex1,Lexem lex2);
 
-Lexem count_expres(lexem_list **lex_head,varible_list *vl);
+Lexem count_expres(lexem_list **lex_head,lexem_list *vl);
 
 Lexem count(Lexem operand1,Lexem operand2,Lexem _operator);
 
 lexem_list* prepare_to_read(lexem_list *p);
 
-bool check_bool_express(lexem_list* p,varible_list *vl);
+bool check_bool_express(lexem_list* p,lexem_list *vl);
 
 lexem_list* update_bool_param(lexem_list *p);
 

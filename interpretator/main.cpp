@@ -23,7 +23,7 @@ int main(int argv,char *argc[])
 
 	errors_list * war_head = 0;
 	
-	varible_list* var_list = 0;
+	lexem_list* var_list = 0;
 	
 	execute *root = 0;
 	
@@ -125,7 +125,7 @@ int main(int argv,char *argc[])
 				}
 				if(!er_head)
 				{
-					varible_list* p = list->vList;
+					lexem_list* p = list->vList;
 					cout<<"no errors."<<endl;
 					cout<<endl<<"<----------------------------------->"<<endl;
 					cout<<"compile secces."<<endl;

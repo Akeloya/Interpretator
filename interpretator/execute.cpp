@@ -300,7 +300,7 @@ int getprior(Lexem lexem)
 	return -1;
 }
 
-Lexem count_expres(lexem_list **lex_head,varible_list *vl)
+Lexem count_expres(lexem_list **lex_head,lexem_list *vl)
 {
 	lexem_list* p = (*lex_head);
 	lexem_list* f = p;
@@ -1100,11 +1100,11 @@ int do_execute(execute *root,errors_list **er_head,errors_list **war_head,_lists
 	return TRUE;
 }
 
-bool add_to_var_list(varible_list** vl,Lexem lexem,int type)
+bool add_to_var_list(lexem_list** vl,Lexem lexem,int type)
 {
 	if(*vl == 0)
 	{
-		(*vl) = (varible_list*) malloc(sizeof(varible_list));
+		(*vl) = (lexem_list*) malloc(sizeof(lexem_list));
 		(*vl)->lexem = lexem;
 		if(type != 0)
 			(*vl)->lexem.type_data = type;
@@ -1113,7 +1113,7 @@ bool add_to_var_list(varible_list** vl,Lexem lexem,int type)
 	}
 	else
 	{
-		varible_list* q = (varible_list*)malloc(sizeof(varible_list));
+		lexem_list* q = (lexem_list*)malloc(sizeof(lexem_list));
 		q->lexem = lexem;
 		q->next = (*vl);
 		(*vl)->prew = q;
@@ -1129,11 +1129,11 @@ bool add_to_funct_list(funct_list** fl,Lexem *lex_head,int nParam)
 	return TRUE;
 }
 
-Lexem* in_var_list(varible_list* vl,Lexem lexem)
+Lexem* in_var_list(lexem_list* vl,Lexem lexem)
 {
 	if(vl != 0)
 	{
-		varible_list * p= vl;
+		lexem_list * p= vl;
 		Lexem *q;
 		while(p!=0)
 		{
@@ -1153,7 +1153,7 @@ bool in_funct_list(funct_list* fl,Lexem lexem)
 	return FALSE;
 }
 
-bool remove_from_var_list(varible_list** vl,Lexem lexem)
+bool remove_from_var_list(lexem_list** vl,Lexem lexem)
 {
 	return TRUE;
 }
@@ -1428,7 +1428,7 @@ int type_expression(lexem_list *lex_head)
 	return type;
 }
 
-bool check_expression(lexem_list * p,varible_list* l,errors_list** er_head)
+bool check_expression(lexem_list * p,lexem_list* l,errors_list** er_head)
 {
 	while(p!=0)
 	{
@@ -2796,7 +2796,7 @@ lexem_list* prepare_to_read(lexem_list *p)
 	return s;
 }
 
-bool check_bool_express(lexem_list* p,varible_list *vl)
+bool check_bool_express(lexem_list* p,lexem_list *vl)
 {
 	if(p->next == 0)
 	{

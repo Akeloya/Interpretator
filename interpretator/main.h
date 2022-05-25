@@ -148,13 +148,6 @@ struct lexem_list
 	struct Lexem lexem;
 };
 
-struct varible_list
-{
-	Lexem lexem;
-	varible_list* next;
-	varible_list* prew;
-};
-
 struct funct_list
 {
 	int iParam;//количество параметров
@@ -167,7 +160,7 @@ struct funct_list
 struct _lists
 {
 	funct_list *fList;
-	varible_list *vList;
+	lexem_list *vList;
 };
 
 struct execute//основная структура программы исполнения
