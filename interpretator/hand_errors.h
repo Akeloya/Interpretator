@@ -3,6 +3,12 @@
 
 #include "main.h"
 
+struct Error {
+	int LinePosition;
+	int Type;
+	std::string GetString();
+};
+
 struct errors_list
 {
 	int lise_pos;

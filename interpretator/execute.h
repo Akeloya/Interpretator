@@ -14,8 +14,6 @@ Lexem pop_expres(lexem_list ** stack);
 
 void push_expres(Lexem lexem,lexem_list **stack);
 
-int getprior(Lexem lexem);
-
 void subtree(item* left,item *site,item** root,bool pos);
 
 void modificate_expres(lexem_list **lex_head,bool root);

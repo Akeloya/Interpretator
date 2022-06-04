@@ -210,7 +210,7 @@ lexem_list* read_expression(lexem_list** lex_head)
 			}
 			if(p->lexem.type ==I_PLUS || p->lexem.type == I_MINUS || p->lexem.type == I_DIVISION || p->lexem.type == I_MULTIPLYING || p->lexem.type == I_INC_PLUS || p->lexem.type == I_INC_MINUS || p->lexem.type == I_PERCENT)
 			{
-				if(getprior(p->lexem)<=getprior(stack->lexem))
+				if(p->lexem.GetPriorty() <= stack->lexem.GetPriorty())
 				{
 					move_to_list(pop_expres(&stack),&head);
 					push_expres(p->lexem,&stack);
@@ -246,7 +246,7 @@ void push_expres(Lexem lexem,lexem_list **stack)
 
 Lexem pop_expres(lexem_list ** stack)
 {
-	Lexem lexem;
+	Lexem lexem{};
 	lexem.type = 0;
 
 	if(*stack == 0)
@@ -259,45 +259,6 @@ Lexem pop_expres(lexem_list ** stack)
 	(*stack) = (*stack)->next;
 	free(p);
 	return lexem;
-}
-
-int getprior(Lexem lexem)
-{
-	if(strcmp(lexem.name,"+") == 0)
-		return 1;
-	if(strcmp(lexem.name,"-") == 0)
-		return 1;
-	if(strcmp(lexem.name,"*") == 0)
-		return 2;
-	if(strcmp(lexem.name,"/") == 0)
-		return 2;
-	if(strcmp(lexem.name,"%") == 0)
-		return 2;
-	if(strcmp(lexem.name,"(") == 0)
-		return 0;
-	if(strcmp(lexem.name,")") == 0)
-		return 0;
-	if(strcmp(lexem.name,"++") == 0)
-		return 1;
-	if(strcmp(lexem.name,"--") == 0)
-		return 1;
-	if(strcmp(lexem.name,">") == 0)
-		return 2;
-	if(strcmp(lexem.name,"<") == 0)
-		return 2;
-	if(strcmp(lexem.name,"==") == 0)
-		return 2;
-	if(strcmp(lexem.name,">=") == 0)
-		return 2;
-	if(strcmp(lexem.name,"<=") == 0)
-		return 2;
-	if(strcmp(lexem.name,"!=") == 0)
-		return 2;
-	if(strcmp(lexem.name,"||") == 0)
-		return 3;
-	if(strcmp(lexem.name,"&&") == 0)
-		return 3;
-	return -1;
 }
 
 Lexem count_expres(lexem_list **lex_head,lexem_list *vl)
@@ -589,40 +550,6 @@ void read_if(execute ** root,lexem_list ** lex_head)
 	}
 	for(;b->prew!=0;b = b->prew);
 	i->boolean = update_bool_param(b);
-	//i->boolean = b;
-/*
-	while(p->lexem.type != I_BRACKET_CLOSE)
-	{
-		if(p->lexem.type == I_IDENTIFIC || p->lexem.type == I_BRACKET_OPEN)
-		{
-			if(p->next->lexem.type != I_BRACKET_CLOSE)
-			{
-				lex->next = read_expression(&p);
-				while(lex->next!=0)
-					lex = lex->next;
-			}
-			else
-			{
-				lexem_list* q = (lexem_list*)malloc(sizeof(lexem_list));
-				lex->next = q;
-				q->next = 0;
-				q->lexem = p->lexem;
-				lex = p;
-			}
-		}
-		if(p->lexem.type >= I_LOW && p->lexem.type <= I_AND)
-		{
-			lexem_list* q = (lexem_list*)malloc(sizeof(lexem_list));
-			lex->next = q;
-			q->next = 0;
-			q->lexem = p->lexem;
-			lex = q;
-		}
-		p = p->next;
-	}*/
-	//lexem_list* f = i->boolean;
-//	i->boolean = i->boolean->next;
-//	free(f);
 	p = p->next;
 	if(p->lexem.type == I_BLOCK_OPEN)
 	{
@@ -1520,7 +1447,7 @@ void assignment(Lexem *lex1,Lexem lex2)
 
 Lexem count(Lexem operand1,Lexem operand2,Lexem _operator)//тип выражения определяется первое лексимой
 {
-	Lexem l;
+	Lexem l{};
 	switch(_operator.type)
 	{
 	case(I_PLUS):
@@ -3001,7 +2928,7 @@ lexem_list* update_bool_param(lexem_list *p)
 			}
 			if(p->lexem.type ==I_PLUS || p->lexem.type == I_MINUS || p->lexem.type == I_DIVISION || p->lexem.type == I_MULTIPLYING || p->lexem.type == I_INC_PLUS || p->lexem.type == I_INC_MINUS || (p->lexem.type >= I_LOW && p->lexem.type <= I_AND) || p->lexem.type == I_PERCENT)
 			{
-				if(getprior(p->lexem)<=getprior(stack->lexem))
+				if(p->lexem.GetPriorty() <= stack->lexem.GetPriorty())
 				{
 					move_to_list(pop_expres(&stack),&head);
 					push_expres(p->lexem,&stack);

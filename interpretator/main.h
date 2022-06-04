@@ -139,6 +139,45 @@ struct Lexem{
 	int Idata;
 	double Ddata;
 	char Cdata;
+
+	int GetPriorty()
+	{
+		if (strcmp(name, "+") == 0)
+			return 1;
+		if (strcmp(name, "-") == 0)
+			return 1;
+		if (strcmp(name, "*") == 0)
+			return 2;
+		if (strcmp(name, "/") == 0)
+			return 2;
+		if (strcmp(name, "%") == 0)
+			return 2;
+		if (strcmp(name, "(") == 0)
+			return 0;
+		if (strcmp(name, ")") == 0)
+			return 0;
+		if (strcmp(name, "++") == 0)
+			return 1;
+		if (strcmp(name, "--") == 0)
+			return 1;
+		if (strcmp(name, ">") == 0)
+			return 2;
+		if (strcmp(name, "<") == 0)
+			return 2;
+		if (strcmp(name, "==") == 0)
+			return 2;
+		if (strcmp(name, ">=") == 0)
+			return 2;
+		if (strcmp(name, "<=") == 0)
+			return 2;
+		if (strcmp(name, "!=") == 0)
+			return 2;
+		if (strcmp(name, "||") == 0)
+			return 3;
+		if (strcmp(name, "&&") == 0)
+			return 3;
+		return -1;
+	}
 };
 
 struct lexem_list
