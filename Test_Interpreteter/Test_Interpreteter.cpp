@@ -59,11 +59,12 @@ namespace TestInterpreteter
 			int check = 0;
 			while (iterator.MoveNext()) 
 			{
-				Assert::AreEqual(check++, iterator.Get());
-			} 
+				Assert::AreEqual(check++, *iterator.Get());
+			}
+			check = 0;
 			for (Iterator<int> it = list->GetIterator(); it.MoveNext();) 
 			{
-				Assert::AreEqual(check++, iterator.Get());
+				Assert::AreEqual(check++, *it.Get());
 			}
 			list->~List();
 		}

@@ -1,10 +1,13 @@
-#ifndef EXECUTE_H
-#define EXECUTE_H
+#pragma once
 
-#include "main.h"
-#include "hand_errors.h"
+#include "Lexem.h"
+#include "Errors.h"
+#include "list.h"
+#include "Common.h"
 
-void struct_execute(execute ** root,lexem_list** lex_head,errors_list **er_head);
+using namespace Interpreter::Collections;
+
+void struct_execute(execute ** root,lexem_list** lex_head,List<Error>*er_head);
 
 execute* read_instruction(lexem_list ** p);
 
@@ -38,11 +41,11 @@ execute* read_block(lexem_list ** lex_head);
 
 execute * line(lexem_list **lex_head,int *type);
 
-void last_checkout(execute *root,errors_list **er_head,errors_list **war_head,_lists **list);
+void last_checkout(execute *root,List<Error>*er_head,List<Error>*war_head,_lists **list);
 
-void last_block_checkout(execute *root,errors_list **er_head,errors_list **war_head,_lists **list,int return_type);
+void last_block_checkout(execute *root,List<Error>* er_head,List<Error>* war_head,_lists **list,int return_type);
 
-int do_execute(execute *root,errors_list **er_head,errors_list **war_head,_lists **list);
+int do_execute(execute *root,List<Error>*er_head,List<Error>*war_head,_lists **list);
 
 bool add_to_var_list(lexem_list** vl,Lexem lexem,int type);
 
@@ -52,7 +55,7 @@ bool add_to_funct_list(funct_list** fl,Lexem *lex_head,int nParam);
 
 int type_expression(lexem_list *lex_head);
 
-bool check_expression(lexem_list * p,lexem_list* l,errors_list** er_head);
+bool check_expression(lexem_list * p,lexem_list* l,List<Error>* er_head);
 
 void assignment(Lexem *lex1,Lexem lex2);
 
@@ -65,5 +68,3 @@ lexem_list* prepare_to_read(lexem_list *p);
 bool check_bool_express(lexem_list* p,lexem_list *vl);
 
 lexem_list* update_bool_param(lexem_list *p);
-
-#endif

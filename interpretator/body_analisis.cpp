@@ -1,22 +1,19 @@
 #include "body_analisis.h"
-#include "declaration.h"
-#include "if_analisis.h"
-#include "expression_analisis.h"
-#include "funct_analisis.h"
-#include "while_analisis.h"
-#include "stack.h"
+#include "list.cpp"
 
-void block_analisis(lexem_list ** lex_head,errors_list ** er_head,Stack<int>* stack,int exit_code)
+using namespace Interpreter::Collections;
+
+void block_analisis(lexem_list ** lex_head, List<Error>* er_head,Stack<int>* stack,int exit_code)
 {
 	lexem_list* p = (*lex_head);
 
-	bool exit = FALSE;
+	bool exit = false;
 
 	if(p->lexem.type == I_BLOCK_OPEN)
 		p = p->next;
 	if(p==0)
 	{
-		move_to_err_list(I_DESTORY,0,er_head);
+		er_head->Add(Error(I_DESTORY,0));
 	}
 	while(p!=0 && !exit && p->lexem.type != exit_code)
 	{
@@ -80,13 +77,13 @@ void block_analisis(lexem_list ** lex_head,errors_list ** er_head,Stack<int>* st
 					{
 						if(stack->Take(1) == I_ASSIGNMENT)
 						{
-							exit = TRUE;
+							exit = false;
 							break;
 						}
 						else
 						{
 							//printf("body_dfb");
-							//move_to_err_list(I_UNKNOWBLE,p->lexem.line_pos,er_head);
+							//er_head->Add(Error(I_UNKNOWBLE,p->lexem.line_pos));
 						}
 					}
 					if(p->next->lexem.type == I_INC_MINUS || p->next->lexem.type == I_INC_PLUS)
@@ -103,7 +100,7 @@ void block_analisis(lexem_list ** lex_head,errors_list ** er_head,Stack<int>* st
 							break;
 						}
 					}
-					move_to_err_list(I_NO_SEMICOLON,p->lexem.line_pos,er_head);
+					er_head->Add(Error(I_NO_SEMICOLON,p->lexem.line_pos));
 					//printf("body dfkbj");
 				}
 				break;
@@ -114,7 +111,7 @@ void block_analisis(lexem_list ** lex_head,errors_list ** er_head,Stack<int>* st
 			}
 		case(I_BLOCK_CLOSE):
 			{
-				move_to_err_list(I_SF_BLOCK_CLOSE,p->lexem.line_pos,er_head);
+				er_head->Add(Error(I_SF_BLOCK_CLOSE,p->lexem.line_pos));
 				break;
 			}
 		default:
@@ -135,7 +132,7 @@ void block_analisis(lexem_list ** lex_head,errors_list ** er_head,Stack<int>* st
 					//printf("body asdvasdvasdvasdvasdv");
 					break;
 				}
-				move_to_err_list(I_UNEXTENDED,p->lexem.line_pos,er_head);
+				er_head->Add(Error(I_UNEXTENDED,p->lexem.line_pos));
 				break;
 			}
 		}

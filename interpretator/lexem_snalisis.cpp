@@ -1,7 +1,8 @@
 #include "lexem_analisis.h"
 #include "list.h"
-#include "hand_errors.h"
+#include "Errors.h"
 
+using namespace Interpreter::Collections;
 
 void modificate(lexem_list **lex_head)
 {
@@ -104,59 +105,9 @@ void modificate(lexem_list **lex_head)
 		p = p->next;
 	}
 }
-
-
-void get_value(Lexem *lexem)
-{
-	switch(lexem->type_data)
-	{
-	case(I_INTEGER):
-		{
-			int len = strlen(lexem->name);
-			int ans = 0;
-			int step = 1;
-			for(int i = 0;i<len;i++)
-			{
-				ans+=(lexem->name[len-1-i]-'0')*step;
-				step*=10;
-			}
-			lexem->Idata = ans;
-			break;
-		}
-	case(I_DOUBLE):
-		{
-			int len = strlen(lexem->name);
-			double ans = 0;
-			double step = 1;
-			int k = 0, i = 0;
-			for(i = 0;i<len;i++)
-				if(lexem->name[i] == '.')
-					break;
-			k = i;
-			for(i = 0;i<k;i++)
-			{
-				ans+=(lexem->name[k-1-i]-'0')*step;
-				step*=10;
-			}
-			step = 0.1;
-			for(i = k+1;i<len;i++)
-			{
-				ans+=(lexem->name[i]-'0')*step;
-				step/=10;
-			}
-			lexem->Ddata = ans;
-			break;
-		}
-	case(I_CHAR):
-		{
-			lexem->Cdata = lexem->name[1];
-			break;
-		}
-	}
-}
 /////////////////////////////////////////////////////////
 
-void lex_analisis(FILE *fin,lexem_list **lex_head,struct errors_list **er_head)
+void lex_analisis(FILE *fin,lexem_list **lex_head, List<Error>*er_head)
 {
 	int c = 0,i = 0, state = 0;
 	char lxm[50];
@@ -177,7 +128,7 @@ void lex_analisis(FILE *fin,lexem_list **lex_head,struct errors_list **er_head)
 			{
 				if(lxm[0] != 39)
 				{
-					move_to_err_list(I_STRING_ERROR,line_pos,er_head);
+					er_head->Add(Error(I_STRING_ERROR,line_pos));
 					return;
 				}
 				lxm[1] = (char)fgetc(fin);
@@ -185,12 +136,12 @@ void lex_analisis(FILE *fin,lexem_list **lex_head,struct errors_list **er_head)
 				{
 					if(lxm[1] != 39)
 					{
-						move_to_err_list(I_ERR_IN_END_LINE,line_pos,er_head);
+						er_head->Add(Error(I_ERR_IN_END_LINE,line_pos));
 						return;
 					}
 					else
 					{
-						move_to_err_list(I_ENPTY_CHAR_CONST,line_pos,er_head);
+						er_head->Add(Error(I_ENPTY_CHAR_CONST,line_pos));
 						return;
 					}
 					printf("lexem analisis");
@@ -199,7 +150,7 @@ void lex_analisis(FILE *fin,lexem_list **lex_head,struct errors_list **er_head)
 					lxm[2] = (char)fgetc(fin);
 				if(lxm[2] != 39)
 				{
-					move_to_err_list(I_NO_INVERED_COMMAS,line_pos,er_head);
+					er_head->Add(Error(I_NO_INVERED_COMMAS,line_pos));
 					return;
 				}
 			}
@@ -215,7 +166,7 @@ void lex_analisis(FILE *fin,lexem_list **lex_head,struct errors_list **er_head)
 
 					new_lexem->line_pos = line_pos;
 					
-					strcpy(new_lexem->name,lxm);
+					strcpy_s(new_lexem->name,lxm);
 					
 					new_lexem->type = GetLexemType(p,line_pos,lex_head,er_head);		
 					
@@ -224,7 +175,7 @@ void lex_analisis(FILE *fin,lexem_list **lex_head,struct errors_list **er_head)
 					if(new_lexem->type == I_INTEGER || new_lexem->type == I_DOUBLE || new_lexem->type == I_CHAR)
 						new_lexem->type = I_IDENTIFIC;
 					
-					get_value(new_lexem);
+					new_lexem->GetValue();
 					
 					move_to_list(*new_lexem,lex_head);
 					
@@ -244,13 +195,13 @@ void lex_analisis(FILE *fin,lexem_list **lex_head,struct errors_list **er_head)
 				
 					new_lexem->line_pos = line_pos;
 					
-					strcpy(new_lexem->name,b);
+					strcpy_s(new_lexem->name,b);
 					
-					new_lexem->type = GetLexemType(b,line_pos,lex_head,er_head);
+					new_lexem->type = GetLexemType(b,line_pos,lex_head, er_head);
 					
 					new_lexem->type_data = new_lexem->type;
 	//				printf("%s \n",b);
-					get_value(new_lexem);
+					new_lexem->GetValue();
 
 					move_to_list(*new_lexem,lex_head);
 
@@ -274,7 +225,7 @@ void lex_analisis(FILE *fin,lexem_list **lex_head,struct errors_list **er_head)
 
 		new_lexem->line_pos = line_pos;
 						
-		strcpy(new_lexem->name,lxm);
+		strcpy_s(new_lexem->name,lxm);
 						
 		new_lexem->type = GetLexemType(p,line_pos,lex_head,er_head);		
 						
@@ -282,7 +233,7 @@ void lex_analisis(FILE *fin,lexem_list **lex_head,struct errors_list **er_head)
 						
 		if(new_lexem->type == I_INTEGER || new_lexem->type == I_DOUBLE || new_lexem->type == I_CHAR)
 			new_lexem->type = I_IDENTIFIC;
-		get_value(new_lexem);
+		new_lexem->GetValue();
 						
 		move_to_list(*new_lexem,lex_head);
 						
@@ -294,7 +245,7 @@ void lex_analisis(FILE *fin,lexem_list **lex_head,struct errors_list **er_head)
 	modificate(lex_head);
 }
 
-int GetLexemType(char *lexem,int line_pos,lexem_list **lex_head,struct errors_list **er_head)
+int GetLexemType(char *lexem,int line_pos,lexem_list **lex_head, List<Error>*er_head)
 {
 	int i = strlen(lexem);
 	int k = 0;
@@ -347,7 +298,7 @@ int GetLexemType(char *lexem,int line_pos,lexem_list **lex_head,struct errors_li
 							return I_IDENTIFIC;
 						else
 						{
-							move_to_err_list(I_STRING_ERROR,line_pos,er_head);
+							er_head->Add(Error(I_STRING_ERROR,line_pos));
 							return I_IDENTIFIC;
 						}
 				}
@@ -358,7 +309,7 @@ int GetLexemType(char *lexem,int line_pos,lexem_list **lex_head,struct errors_li
 	{
 		if((lexem[0]>='a' && lexem[0]<='z') || (lexem[0] >= 'A' && lexem[0] <= 'Z'))
 		{
-			bool l = FALSE;
+			bool l = false;
 			while(k<i)
 			{
 				if((lexem[k]>='a' && lexem[k]<='z') || (lexem[k] >= 'A' && lexem[k] <= 'Z'))
@@ -367,10 +318,10 @@ int GetLexemType(char *lexem,int line_pos,lexem_list **lex_head,struct errors_li
 				{
 					k++;
 					if(!l)
-						l = TRUE;
+						l = true;
 					else
 					{
-						move_to_err_list(I_STRING_ERROR,line_pos,er_head);
+						er_head->Add(Error(I_STRING_ERROR,line_pos));
 						//printf("\n\n\t\tnerror!\n\n");
 						break;
 					}
@@ -398,7 +349,7 @@ int GetLexemType(char *lexem,int line_pos,lexem_list **lex_head,struct errors_li
 			if(lexem[i-1] != '"')
 			{
 				//printf("\n\n\t\tnerror!\n\n");
-				move_to_err_list(I_STRING_ERROR,line_pos,er_head);
+				er_head->Add(Error(I_STRING_ERROR,line_pos));
 				return I_STRING;
 			}
 			else
@@ -418,7 +369,7 @@ int GetLexemType(char *lexem,int line_pos,lexem_list **lex_head,struct errors_li
 					}
 					else
 					{
-						move_to_err_list(I_STRING_ERROR,line_pos,er_head);
+						er_head->Add(Error(I_STRING_ERROR,line_pos));
 						//printf("\n\n\t\tnerror!\n\n");
 						break;
 					}
@@ -432,7 +383,7 @@ int GetLexemType(char *lexem,int line_pos,lexem_list **lex_head,struct errors_li
 			if(i != 3 || lexem[2] != 39)
 			{
 				//printf("\n\n\terror!\n");
-				move_to_err_list(I_STRING_ERROR,line_pos,er_head);
+				er_head->Add(Error(I_STRING_ERROR,line_pos));
 				return I_CHAR;
 			}
 			else

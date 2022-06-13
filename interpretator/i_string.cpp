@@ -1,4 +1,5 @@
 #include "i_string.h"
+#include <iostream>
 
 char* update_string(char* s)
 {

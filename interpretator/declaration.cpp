@@ -1,12 +1,15 @@
 #include "declaration.h"
 #include "expression_analisis.h"
 #include "stack.h"
+#include "list.h"
 
-void declaration_analisis(lexem_list **lex_head,errors_list** er_head,Stack<int>* stack)
+using namespace Interpreter::Collections;
+
+void declaration_analisis(lexem_list **lex_head,List<Error>* er_head,Stack<int>* stack)
 {
 	lexem_list *p = (*lex_head);
 
-	bool exit = FALSE;
+	bool exit = false;
 
 	while(p!=0 && !exit)
 	{
@@ -21,7 +24,8 @@ void declaration_analisis(lexem_list **lex_head,errors_list** er_head,Stack<int>
 				}
 				else
 				{
-					move_to_err_list(I_TYPE_IN_TYPE,p->lexem.line_pos,er_head);
+					er_head->Add(Error(I_TYPE_IN_TYPE,p->lexem.line_pos));
+					
 				}
 				break;
 			}
@@ -42,7 +46,7 @@ void declaration_analisis(lexem_list **lex_head,errors_list** er_head,Stack<int>
 							if(p->lexem.type == I_SEMICOLON)
 							{
 								//stack->Push(I_SEMICOLON,stack_head);
-								exit = TRUE;
+								exit = true;
 								break;
 							}
 						}
@@ -79,8 +83,8 @@ void declaration_analisis(lexem_list **lex_head,errors_list** er_head,Stack<int>
 					stack->Pop();
 				}
 				else
-					move_to_err_list(I_ERR_IN_END_LINE,p->lexem.line_pos,er_head);
-				exit = TRUE;
+					er_head->Add(Error(I_ERR_IN_END_LINE,p->lexem.line_pos));
+				exit = true;
 				break;
 			}
 		default:
@@ -97,7 +101,7 @@ void declaration_analisis(lexem_list **lex_head,errors_list** er_head,Stack<int>
 		while((cond = stack->Peek()) != I_DECLARATION)
 		{
 			if(cond == I_SEMICOLON)
-				move_to_err_list(I_NO_IDENTIFICATOR,p->lexem.line_pos,er_head);
+				er_head->Add(Error(I_NO_IDENTIFICATOR,p->lexem.line_pos));
 			stack->Pop();
 		}
 	}
@@ -105,11 +109,11 @@ void declaration_analisis(lexem_list **lex_head,errors_list** er_head,Stack<int>
 }
 
 
-void assignment_analisis(lexem_list** lex_head, errors_list** er_head, Stack<int>* stack)
+void assignment_analisis(lexem_list** lex_head, List<Error>* er_head, Stack<int>* stack)
 {
 	lexem_list* p = (*lex_head);
 
-	bool exit = FALSE;
+	bool exit = false;
 
 	while (p != 0 && !exit)
 	{
@@ -127,7 +131,7 @@ void assignment_analisis(lexem_list** lex_head, errors_list** er_head, Stack<int
 				stack->Pop();
 				stack->Push(I_EXPRESSION);
 				expression_analisis(&p, er_head, stack, I_SEMICOLON);
-				exit = TRUE;
+				exit = true;
 				stack->Pop();
 			}
 			break;
@@ -148,7 +152,7 @@ void assignment_analisis(lexem_list** lex_head, errors_list** er_head, Stack<int
 				stack->Pop();
 				stack->Push(I_EXPRESSION);
 				expression_analisis(&p, er_head, stack, I_SEMICOLON);
-				exit = TRUE;
+				exit = true;
 				stack->Pop();
 			}
 			break;
@@ -160,7 +164,7 @@ void assignment_analisis(lexem_list** lex_head, errors_list** er_head, Stack<int
 				stack->Pop();
 				stack->Push(I_EXPRESSION);
 				expression_analisis(&p, er_head, stack, I_SEMICOLON);
-				exit = TRUE;
+				exit = true;
 				stack->Pop();
 			}
 			break;
@@ -172,7 +176,7 @@ void assignment_analisis(lexem_list** lex_head, errors_list** er_head, Stack<int
 				stack->Pop();
 				stack->Push(I_EXPRESSION);
 				expression_analisis(&p, er_head, stack, I_SEMICOLON);
-				exit = TRUE;
+				exit = true;
 				stack->Pop();
 			}
 			break;

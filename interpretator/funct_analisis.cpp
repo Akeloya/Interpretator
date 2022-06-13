@@ -2,12 +2,16 @@
 #include "body_analisis.h"
 #include "expression_analisis.h"
 #include "stack.h"
+#include "list.h"
+#include "Errors.h"
 
-void funct_analisis(lexem_list **lex_head,errors_list** er_head,Stack<int>* stack)
+using namespace Interpreter::Collections;
+
+void funct_analisis(lexem_list **lex_head,List<Error>* er_head,Stack<int>* stack)
 {
 	lexem_list  *p = (*lex_head);
 
-	bool exit = FALSE;
+	bool exit = false;
 
 	while(p!=0 && !exit)
 	{
@@ -22,7 +26,7 @@ void funct_analisis(lexem_list **lex_head,errors_list** er_head,Stack<int>* stac
 						stack->Push(I_IDENTIFIC);
 						break;
 					}
-					move_to_err_list(I_ERR_AFTER_BLOCK,p->lexem.line_pos,er_head);
+					er_head->Add(Error(I_ERR_AFTER_BLOCK,p->lexem.line_pos));
 					break;
 				}
 				break;
@@ -37,7 +41,7 @@ void funct_analisis(lexem_list **lex_head,errors_list** er_head,Stack<int>* stac
 				}
 				else
 				{
-					move_to_err_list(I_UNEXTENDED,p->lexem.line_pos,er_head);
+					er_head->Add(Error(I_UNEXTENDED,p->lexem.line_pos));
 					break;
 				}
 				break;
@@ -59,17 +63,17 @@ void funct_analisis(lexem_list **lex_head,errors_list** er_head,Stack<int>* stac
 				block_analisis(&p,er_head,stack,I_BLOCK_CLOSE);
 				stack->Pop();
 				if(p->next == 0)
-					exit = TRUE;
+					exit = true;
 				break;
 			}
 		case(I_BLOCK_CLOSE):
 			{
-				exit = TRUE;
+				exit = true;
 				break;
 			}
 		default:
 			{
-				move_to_err_list(I_UNEXTENDED,p->lexem.line_pos,er_head);
+				er_head->Add(Error(I_UNEXTENDED,p->lexem.line_pos));
 				break;
 			}
 		}
@@ -80,11 +84,11 @@ void funct_analisis(lexem_list **lex_head,errors_list** er_head,Stack<int>* stac
 }
 
 
-void parameters_analisis(lexem_list **lex_head,errors_list** er_head,Stack<int>* stack)
+void parameters_analisis(lexem_list **lex_head,List<Error>* er_head,Stack<int>* stack)
 {
 	lexem_list *p = (*lex_head);
 
-	bool exit = FALSE;
+	bool exit = false;
 	
 	while(p!=0 && !exit)
 	{
@@ -99,7 +103,7 @@ void parameters_analisis(lexem_list **lex_head,errors_list** er_head,Stack<int>*
 				}
 				else
 				{
-					move_to_err_list(I_UNEXTENDED_C_W,p->lexem.line_pos,er_head);
+					er_head->Add(Error(I_UNEXTENDED_C_W,p->lexem.line_pos));
 				}
 				break;
 			}
@@ -110,12 +114,12 @@ void parameters_analisis(lexem_list **lex_head,errors_list** er_head,Stack<int>*
 					stack->Pop();
 					if(p->lexem.type_data == I_INTEGER || p->lexem.type_data == I_DOUBLE || p->lexem.type_data == I_CHAR)
 					{
-						move_to_err_list(I_ERR_IN_IDENTIFIC,p->lexem.line_pos,er_head);
+						er_head->Add(Error(I_ERR_IN_IDENTIFIC,p->lexem.line_pos));
 					}
 				}
 				else
 				{
-					move_to_err_list(I_UNEXTENDED_ID,p->lexem.line_pos,er_head);
+					er_head->Add(Error(I_UNEXTENDED_ID,p->lexem.line_pos));
 				}
 				break;
 			}
@@ -123,16 +127,16 @@ void parameters_analisis(lexem_list **lex_head,errors_list** er_head,Stack<int>*
 			{
 				if(stack->Peek() == I_PARAMETERS)
 				{
-					exit = TRUE;
+					exit = true;
 					break;
 				}
 				else
 				{
 					if (stack->Peek() != I_CONST_WORD)
-						move_to_err_list(I_UNEXTENDED_BRACK, p->lexem.line_pos, er_head);
+						er_head->Add(Error(I_UNEXTENDED_BRACK, p->lexem.line_pos));
 					else
 						stack->Pop();
-					exit = TRUE;
+					exit = true;
 					break;
 				}
 			}
@@ -144,7 +148,7 @@ void parameters_analisis(lexem_list **lex_head,errors_list** er_head,Stack<int>*
 				}
 				else
 				{
-					move_to_err_list(I_UNEXTENDED_COMMA,p->lexem.line_pos,er_head);
+					er_head->Add(Error(I_UNEXTENDED_COMMA,p->lexem.line_pos));
 				}
 				break;
 			}
@@ -167,11 +171,11 @@ void parameters_analisis(lexem_list **lex_head,errors_list** er_head,Stack<int>*
 	(*lex_head) = p;
 }
 
-void funct_inline_analisis(lexem_list **lex_head,errors_list** er_head,Stack<int>* stack)
+void funct_inline_analisis(lexem_list **lex_head,List<Error>* er_head,Stack<int>* stack)
 {
 	lexem_list *p = (*lex_head);
 
-	bool exit = FALSE;
+	bool exit = false;
 
 	while(p!=0 && !exit)
 	{
@@ -245,7 +249,7 @@ void funct_inline_analisis(lexem_list **lex_head,errors_list** er_head,Stack<int
 				{
 					stack->Pop();
 					stack->Push(I_SEMICOLON);
-					move_to_err_list(I_NO_FUNCT_PARAM,p->lexem.line_pos,er_head);
+					er_head->Add(Error(I_NO_FUNCT_PARAM,p->lexem.line_pos));
 					break;
 				}
 				//printf("zfg");
@@ -267,7 +271,7 @@ void funct_inline_analisis(lexem_list **lex_head,errors_list** er_head,Stack<int
 				if(stack->Peek() == I_SEMICOLON)
 				{
 					stack->Pop();
-					exit = TRUE;
+					exit = true;
 					break;
 				}
 				else
@@ -277,7 +281,7 @@ void funct_inline_analisis(lexem_list **lex_head,errors_list** er_head,Stack<int
 			}
 		default:
 			{
-				move_to_err_list(I_ILLEGAL_EXPRES,p->lexem.line_pos,er_head);
+				er_head->Add(Error(I_ILLEGAL_EXPRES,p->lexem.line_pos));
 				break;
 			}
 		}

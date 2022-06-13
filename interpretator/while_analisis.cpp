@@ -6,11 +6,11 @@
 
 using namespace Interpreter::Collections;
 
-void while_analisis(lexem_list **lex_head,errors_list** er_head,Stack<int>* stack)
+void while_analisis(lexem_list **lex_head,List<Error>* er_head,Stack<int>* stack)
 {
 	lexem_list *p = (*lex_head);
 	
-	bool exit = FALSE;
+	bool exit = false;
 
 	while(p!= 0 && !exit)
 	{
@@ -32,7 +32,7 @@ void while_analisis(lexem_list **lex_head,errors_list** er_head,Stack<int>* stac
 						if_analisis(&p,er_head,stack);
 						stack->Pop();
 						if(stack->Peek() == I_WHILE)
-							exit = TRUE;
+							exit = true;
 						break;
 					}
 					if(strcmp("while",p->lexem.name) == 0)
@@ -41,7 +41,7 @@ void while_analisis(lexem_list **lex_head,errors_list** er_head,Stack<int>* stac
 						while_analisis(&p,er_head,stack);
 						stack->Pop();
 						if(stack->Peek() == I_WHILE)
-							exit = TRUE;
+							exit = true;
 						break;
 					}
 					if(strcmp("return",p->lexem.name) == 0)
@@ -97,7 +97,7 @@ void while_analisis(lexem_list **lex_head,errors_list** er_head,Stack<int>* stac
 				{
 					block_analisis(&p,er_head,stack,I_BLOCK_CLOSE);
 					stack->Pop();
-					exit = TRUE;
+					exit = true;
 					break;
 				}
 				if(stack->Peek() == I_BLOCK_OPEN)
@@ -108,7 +108,7 @@ void while_analisis(lexem_list **lex_head,errors_list** er_head,Stack<int>* stac
 						stack->Push(I_FUNCT_ANALISIS);
 						funct_inline_analisis(&p,er_head,stack);
 						stack->Pop();
-						exit = TRUE;
+						exit = true;
 						break;
 					}
 				}
@@ -123,7 +123,7 @@ void while_analisis(lexem_list **lex_head,errors_list** er_head,Stack<int>* stac
 					stack->Push(I_BODY);
 					block_analisis(&p,er_head,stack,I_BLOCK_CLOSE);
 					stack->Pop();
-					exit = TRUE;
+					exit = true;
 					break;
 				}
 				printf("while");

@@ -1,19 +1,23 @@
+#include <iostream>
+
 #include "execute.h"
 #include "list.h"
 #include "i_string.h"
+#include "Errors.h"
 
 using namespace std;
+using namespace Interpreter::Collections;
 
-void struct_execute(execute ** root,lexem_list** lex_head,errors_list **er_head)
+void struct_execute(execute ** root,lexem_list** lex_head,List<Error> *er_head)
 {
 	lexem_list *p = (*lex_head);
 	
 	execute *s_root = 0;
 	if(!read_root(root,&p))
 	{
-		move_to_err_list(I_NO_MAIN,p->lexem.line_pos-1,er_head);
-		move_to_err_list(I_DESTORY,p->lexem.line_pos-1,er_head);
-		move_to_err_list(I_FATAL_ER_EXECUT,0,er_head);
+		er_head->Add(Error(I_NO_MAIN, p->lexem.line_pos - 1));
+		er_head->Add(Error(I_DESTORY, p->lexem.line_pos - 1));
+		er_head->Add(Error(I_FATAL_ER_EXECUT,0));
 		return;
 	}
 	
@@ -169,15 +173,15 @@ int read_root(execute ** root,lexem_list ** lex_head)
 					//lexem_list *q = (lexem_list*)(*root)->address;
 				}
 				(*lex_head) = p;
-				return TRUE;
+				return true;
 			}
 			else
-				return FALSE;
+				return false;
 		}
 		p = p->next;
 	}
 	(*lex_head) = p;
-	return TRUE;
+	return true;
 }
 
 lexem_list* read_expression(lexem_list** lex_head)
@@ -791,7 +795,7 @@ execute * line(lexem_list **lex_head,int *type)
 	return root;
 }
 
-int do_execute(execute *root,errors_list **er_head,errors_list **war_head,_lists **list)
+int do_execute(execute *root,List<Error> *er_head,List<Error> *war_head,_lists **list)
 {
 	execute *r = root;
 	while(r!=0)
@@ -830,8 +834,8 @@ int do_execute(execute *root,errors_list **er_head,errors_list **war_head,_lists
 								Lexem *q = in_var_list((*list)->vList,p->lexem);
 								if(!q  && p->lexem.name[0] !='\'')
 								{
-									move_to_err_list(I_UNKNOWBLE_ID,p->lexem.line_pos,er_head);
-									return FALSE;
+									er_head->Add(Error(I_UNKNOWBLE_ID,p->lexem.line_pos));
+									return false;
 								}
 								if(p->lexem.name[0] !='\'')
 									count_expres(&p,(*list)->vList);
@@ -873,8 +877,8 @@ int do_execute(execute *root,errors_list **er_head,errors_list **war_head,_lists
 							Lexem *p = in_var_list((*list)->vList,par->nParam->lexem);
 							if(p == 0)
 							{
-								move_to_err_list(I_DESTORY,par->nParam->lexem.line_pos,er_head);
-								return FALSE;
+								er_head->Add(Error(I_DESTORY,par->nParam->lexem.line_pos));
+								return false;
 							}
 							switch(p->type_data)
 							{
@@ -1016,7 +1020,7 @@ int do_execute(execute *root,errors_list **er_head,errors_list **war_head,_lists
 						break;
 					}
 				}
-				return TRUE;
+				return true;
 			}
 		default:
 			printf("unknowble error\n");
@@ -1024,7 +1028,7 @@ int do_execute(execute *root,errors_list **er_head,errors_list **war_head,_lists
 		}
 		r = r->next;
 	}
-	return TRUE;
+	return true;
 }
 
 bool add_to_var_list(lexem_list** vl,Lexem lexem,int type)
@@ -1048,12 +1052,12 @@ bool add_to_var_list(lexem_list** vl,Lexem lexem,int type)
 		if(type != 0)
 			(*vl)->lexem.type_data = type;
 	}
-	return TRUE;
+	return true;
 }
 
 bool add_to_funct_list(funct_list** fl,Lexem *lex_head,int nParam)
 {
-	return TRUE;
+	return true;
 }
 
 Lexem* in_var_list(lexem_list* vl,Lexem lexem)
@@ -1077,25 +1081,25 @@ Lexem* in_var_list(lexem_list* vl,Lexem lexem)
 
 bool in_funct_list(funct_list* fl,Lexem lexem)
 {
-	return FALSE;
+	return false;
 }
 
 bool remove_from_var_list(lexem_list** vl,Lexem lexem)
 {
-	return TRUE;
+	return true;
 }
 
 bool remove_from_funct_list(funct_list** fl)
 {
-	return TRUE;
+	return true;
 }
 
 
-void last_checkout(execute *root,errors_list **er_head,errors_list **war_head,_lists **list)
+void last_checkout(execute *root,List<Error> *er_head,List<Error> *war_head,_lists **list)
 {
 	execute *r = root;
 	int return_type = 0;
-	bool Return = FALSE;
+	bool Return = false;
 	while(r!=0)
 	{
 		switch(r->type)
@@ -1113,7 +1117,7 @@ void last_checkout(execute *root,errors_list **er_head,errors_list **war_head,_l
 							add_to_var_list(&(*list)->vList,p->lexem,0);
 						else
 						{
-							move_to_err_list(I_REDEFINITION,p->lexem.line_pos,er_head);
+							er_head->Add(Error(I_REDEFINITION,p->lexem.line_pos));
 							return;
 						}
 						p = p->next;
@@ -1133,14 +1137,14 @@ void last_checkout(execute *root,errors_list **er_head,errors_list **war_head,_l
 					while(par!=0)
 					{
 						if(par->nParam->lexem.type == I_STRING)
-							move_to_err_list(I_ERR_IN_F_PARAM,par->nParam->lexem.line_pos,er_head);
+							er_head->Add(Error(I_ERR_IN_F_PARAM,par->nParam->lexem.line_pos));
 						if(par->nParam->lexem.type == I_IDENTIFIC)
 						{
 							lexem_list* a = par->nParam;
 							while(a!=0)
 							{
 								if(!in_var_list((*list)->vList,a->lexem) && !(a->lexem.type >= I_PERCENT && a->lexem.type <= I_INC_PLUS) && a->lexem.type != I_SEMICOLON)
-									move_to_err_list(I_UNKNOWBLE_ID,a->lexem.line_pos,er_head);
+									er_head->Add(Error(I_UNKNOWBLE_ID,a->lexem.line_pos));
 								a = a->next;
 							}
 						}
@@ -1157,7 +1161,7 @@ void last_checkout(execute *root,errors_list **er_head,errors_list **war_head,_l
 							while(a!=0)
 							{
 								if(!in_var_list((*list)->vList,a->lexem) && !(a->lexem.type >= I_PERCENT && a->lexem.type <= I_INC_PLUS) && a->lexem.type != I_SEMICOLON && a->lexem.name[0] !='\'')
-									move_to_err_list(I_UNKNOWBLE_ID,a->lexem.line_pos,er_head);
+									er_head->Add(Error(I_UNKNOWBLE_ID,a->lexem.line_pos));
 								a = a->next;
 							}
 						}
@@ -1186,7 +1190,7 @@ void last_checkout(execute *root,errors_list **er_head,errors_list **war_head,_l
 						int t = type_expression((lexem_list*)d->index.right);
 						if(!check_expression((lexem_list*)d->index.right,(*list)->vList,er_head))
 						{
-							move_to_err_list(I_UNKNOWBLE_ID,d->index.lexem.line_pos,er_head);
+							er_head->Add(Error(I_UNKNOWBLE_ID,d->index.lexem.line_pos));
 							return;
 						}
 						else
@@ -1195,12 +1199,12 @@ void last_checkout(execute *root,errors_list **er_head,errors_list **war_head,_l
 								add_to_var_list(&(*list)->vList,*(Lexem*)d->index.left,tl);
 							else
 							{
-								move_to_err_list(I_REDEFINITION,d->index.lexem.line_pos,er_head);
+								er_head->Add(Error(I_REDEFINITION,d->index.lexem.line_pos));
 								return;
 							}
 						}
 						if(tl != t)
-							move_to_err_list(I_W_IDENTIFICATION,d->index.lexem.line_pos,war_head);
+							er_head->Add(Error(I_W_IDENTIFICATION,d->index.lexem.line_pos));
 					}
 					else
 					{
@@ -1208,10 +1212,10 @@ void last_checkout(execute *root,errors_list **er_head,errors_list **war_head,_l
 							add_to_var_list(&(*list)->vList,d->index.lexem,tl);
 						else
 						{
-							move_to_err_list(I_REDEFINITION,d->index.lexem.line_pos,er_head);
+							er_head->Add(Error(I_REDEFINITION,d->index.lexem.line_pos));
 							return;
 						}
-						move_to_err_list(I_NO_INDEFINED,d->index.lexem.line_pos,war_head);
+						er_head->Add(Error(I_NO_INDEFINED,d->index.lexem.line_pos));
 					}
 					d = d->next;
 				}
@@ -1226,20 +1230,20 @@ void last_checkout(execute *root,errors_list **er_head,errors_list **war_head,_l
 				
 				if(!in_var_list((*list)->vList,*l))
 				{
-					move_to_err_list(I_UNKNOWBLE_ID,q->lexem.line_pos,er_head);
+					er_head->Add(Error(I_UNKNOWBLE_ID,q->lexem.line_pos));
 					return;
 				}
 				while(q!=0)
 				{
 					if(!in_var_list((*list)->vList,q->lexem) && !(q->lexem.type >= I_PERCENT && q->lexem.type <= I_INC_MINUS) && !(q->lexem.name[0] >= '0' && q->lexem.name[0]<='9'))
 					{
-						move_to_err_list(I_UNKNOWBLE_ID,q->lexem.line_pos,er_head);
+						er_head->Add(Error(I_UNKNOWBLE_ID,q->lexem.line_pos));
 					}
 					q = q->next;
 				}
 				q = (lexem_list*)i->right;
 				if(type != type_expression(q))
-					move_to_err_list(I_W_IDENTIFICATION,q->lexem.line_pos,war_head);
+					er_head->Add(Error(I_W_IDENTIFICATION,q->lexem.line_pos));
 				break;
 			}
 		case(I_EXPRESSION):
@@ -1257,7 +1261,7 @@ void last_checkout(execute *root,errors_list **er_head,errors_list **war_head,_l
 					if(!(p->lexem.name[0] >= '0' && p->lexem.name[0]<='9') && !(p->lexem.type >= I_LOW && p->lexem.type <= I_AND) && !(p->lexem.type >= I_PERCENT && p->lexem.type <= I_INC_MINUS))
 						if(!in_var_list((*list)->vList,p->lexem))
 						{
-							move_to_err_list(I_UNKNOWBLE_ID,p->lexem.line_pos,er_head);
+							er_head->Add(Error(I_UNKNOWBLE_ID,p->lexem.line_pos));
 						}
 					p = p->next;
 				}
@@ -1274,7 +1278,7 @@ void last_checkout(execute *root,errors_list **er_head,errors_list **war_head,_l
 					if(!(p->lexem.name[0] >= '0' && p->lexem.name[0]<='9') && !(p->lexem.type >= I_LOW && p->lexem.type <= I_AND) && !(p->lexem.type >= I_PERCENT && p->lexem.type <= I_INC_MINUS))
 						if(!in_var_list((*list)->vList,p->lexem))
 						{
-							move_to_err_list(I_UNKNOWBLE_ID,p->lexem.line_pos,er_head);
+							er_head->Add(Error(I_UNKNOWBLE_ID,p->lexem.line_pos));
 						}
 					p = p->next;
 				}
@@ -1297,24 +1301,24 @@ void last_checkout(execute *root,errors_list **er_head,errors_list **war_head,_l
 						{
 							if(!in_var_list((*list)->vList,q->lexem) && !(q->lexem.type >= I_PERCENT && q->lexem.type <= I_INC_MINUS) && !(q->lexem.name[0] >= '0' && q->lexem.name[0] <= '9') && q->lexem.name[0] != 39)
 							{
-								move_to_err_list(I_UNKNOWBLE_ID,q->lexem.line_pos,er_head);
+								er_head->Add(Error(I_UNKNOWBLE_ID,q->lexem.line_pos));
 								return;
 							}
 							q = q->next;
 						}
 						if(return_type != type_expression(q1))
-							move_to_err_list(I_W_RETURN_DATA,q1->lexem.line_pos,war_head);
-						Return = TRUE;
+							er_head->Add(Error(I_W_RETURN_DATA,q1->lexem.line_pos));
+						Return = true;
 						//printf("return\n");
 					}
 					else
-						move_to_err_list(I_ERR_VOID_FUNCT,q->lexem.line_pos,er_head);
+						er_head->Add(Error(I_ERR_VOID_FUNCT,q->lexem.line_pos));
 				}
 				else
 				{
 					if(return_type == I_VOID)
-						move_to_err_list(I_ERR_VOID_FUNCT,q->lexem.line_pos,er_head);
-					move_to_err_list(I_W_ONE_RETURN,q->lexem.line_pos,war_head);
+						er_head->Add(Error(I_ERR_VOID_FUNCT,q->lexem.line_pos));
+					er_head->Add(Error(I_W_ONE_RETURN,q->lexem.line_pos));
 				}
 				break;
 			}
@@ -1355,19 +1359,19 @@ int type_expression(lexem_list *lex_head)
 	return type;
 }
 
-bool check_expression(lexem_list * p,lexem_list* l,errors_list** er_head)
+bool check_expression(lexem_list * p,lexem_list* l,List<Error>* er_head)
 {
 	while(p!=0)
 	{
 		if(p->lexem.type == I_IDENTIFIC && !(p->lexem.name[0]>='0' && p->lexem.name[0]<='9') && p->lexem.name[0] != 39)
 			if(!in_var_list(l,p->lexem))
 			{
-				move_to_err_list(I_UNKNOWBLE_ID,p->lexem.line_pos,er_head);
-				return FALSE;
+				er_head->Add(Error(I_UNKNOWBLE_ID,p->lexem.line_pos));
+				return false;
 			}
 		p = p->next;
 	}
-	return TRUE;
+	return true;
 }
 
 void assignment(Lexem *lex1,Lexem lex2)
@@ -1872,25 +1876,25 @@ Lexem count(Lexem operand1,Lexem operand2,Lexem _operator)//тип выражения опреде
 					case(I_INTEGER):
 						{
 							if(operand1.Idata < operand2.Idata)
-								l.Idata = TRUE;
+								l.Idata = true;
 							else
-								l.Idata = FALSE;
+								l.Idata = false;
 							break;
 						}
 					case(I_DOUBLE):
 						{
 							if(operand1.Idata < operand2.Ddata)
-								l.Idata = TRUE;
+								l.Idata = true;
 							else
-								l.Idata = FALSE;
+								l.Idata = false;
 							break;
 						}
 					case(I_CHAR):
 						{
 							if(operand1.Idata < operand2.Cdata)
-								l.Idata = TRUE;
+								l.Idata = true;
 							else
-								l.Idata = FALSE;
+								l.Idata = false;
 							break;
 						}
 					}
@@ -1903,25 +1907,25 @@ Lexem count(Lexem operand1,Lexem operand2,Lexem _operator)//тип выражения опреде
 					case(I_INTEGER):
 						{
 							if(operand1.Ddata < operand2.Idata)
-								l.Idata = TRUE;
+								l.Idata = true;
 							else
-								l.Idata = FALSE;
+								l.Idata = false;
 							break;
 						}
 					case(I_DOUBLE):
 						{
 							if(operand1.Ddata < operand2.Ddata)
-								l.Idata = TRUE;
+								l.Idata = true;
 							else
-								l.Idata = FALSE;
+								l.Idata = false;
 							break;
 						}
 					case(I_CHAR):
 						{
 							if(operand1.Ddata < operand2.Cdata)
-								l.Idata = TRUE;
+								l.Idata = true;
 							else
-								l.Idata = FALSE;
+								l.Idata = false;
 							break;
 						}
 					}
@@ -1934,25 +1938,25 @@ Lexem count(Lexem operand1,Lexem operand2,Lexem _operator)//тип выражения опреде
 					case(I_INTEGER):
 						{
 							if(operand1.Cdata < operand2.Idata)
-								l.Idata = TRUE;
+								l.Idata = true;
 							else
-								l.Idata = FALSE;
+								l.Idata = false;
 							break;
 						}
 					case(I_DOUBLE):
 						{
 							if(operand1.Cdata < operand2.Ddata)
-								l.Idata = TRUE;
+								l.Idata = true;
 							else
-								l.Idata = FALSE;
+								l.Idata = false;
 							break;
 						}
 					case(I_CHAR):
 						{
 							if(operand1.Cdata < operand2.Cdata)
-								l.Idata = TRUE;
+								l.Idata = true;
 							else
-								l.Idata = FALSE;
+								l.Idata = false;
 							break;
 						}
 					}
@@ -1973,25 +1977,25 @@ Lexem count(Lexem operand1,Lexem operand2,Lexem _operator)//тип выражения опреде
 					case(I_INTEGER):
 						{
 							if(operand1.Idata > operand2.Idata)
-								l.Idata = TRUE;
+								l.Idata = true;
 							else
-								l.Idata = FALSE;
+								l.Idata = false;
 							break;
 						}
 					case(I_DOUBLE):
 						{
 							if(operand1.Idata > operand2.Ddata)
-								l.Idata = TRUE;
+								l.Idata = true;
 							else
-								l.Idata = FALSE;
+								l.Idata = false;
 							break;
 						}
 					case(I_CHAR):
 						{
 							if(operand1.Idata > operand2.Cdata)
-								l.Idata = TRUE;
+								l.Idata = true;
 							else
-								l.Idata = FALSE;
+								l.Idata = false;
 							break;
 						}
 					}
@@ -2004,25 +2008,25 @@ Lexem count(Lexem operand1,Lexem operand2,Lexem _operator)//тип выражения опреде
 					case(I_INTEGER):
 						{
 							if(operand1.Ddata > operand2.Idata)
-								l.Idata = TRUE;
+								l.Idata = true;
 							else
-								l.Idata = FALSE;
+								l.Idata = false;
 							break;
 						}
 					case(I_DOUBLE):
 						{
 							if(operand1.Ddata > operand2.Ddata)
-								l.Idata = TRUE;
+								l.Idata = true;
 							else
-								l.Idata = FALSE;
+								l.Idata = false;
 							break;
 						}
 					case(I_CHAR):
 						{
 							if(operand1.Ddata > operand2.Cdata)
-								l.Idata = TRUE;
+								l.Idata = true;
 							else
-								l.Idata = FALSE;
+								l.Idata = false;
 							break;
 						}
 					}
@@ -2035,25 +2039,25 @@ Lexem count(Lexem operand1,Lexem operand2,Lexem _operator)//тип выражения опреде
 					case(I_INTEGER):
 						{
 							if(operand1.Cdata > operand2.Idata)
-								l.Idata = TRUE;
+								l.Idata = true;
 							else
-								l.Idata = FALSE;
+								l.Idata = false;
 							break;
 						}
 					case(I_DOUBLE):
 						{
 							if(operand1.Cdata > operand2.Ddata)
-								l.Idata = TRUE;
+								l.Idata = true;
 							else
-								l.Idata = FALSE;
+								l.Idata = false;
 							break;
 						}
 					case(I_CHAR):
 						{
 							if(operand1.Cdata > operand2.Cdata)
-								l.Idata = TRUE;
+								l.Idata = true;
 							else
-								l.Idata = FALSE;
+								l.Idata = false;
 							break;
 						}
 					}
@@ -2074,25 +2078,25 @@ Lexem count(Lexem operand1,Lexem operand2,Lexem _operator)//тип выражения опреде
 					case(I_INTEGER):
 						{
 							if(operand1.Idata >= operand2.Idata)
-								l.Idata = TRUE;
+								l.Idata = true;
 							else
-								l.Idata = FALSE;
+								l.Idata = false;
 							break;
 						}
 					case(I_DOUBLE):
 						{
 							if(operand1.Idata >= operand2.Ddata)
-								l.Idata = TRUE;
+								l.Idata = true;
 							else
-								l.Idata = FALSE;
+								l.Idata = false;
 							break;
 						}
 					case(I_CHAR):
 						{
 							if(operand1.Idata >= operand2.Cdata)
-								l.Idata = TRUE;
+								l.Idata = true;
 							else
-								l.Idata = FALSE;
+								l.Idata = false;
 							break;
 						}
 					}
@@ -2105,25 +2109,25 @@ Lexem count(Lexem operand1,Lexem operand2,Lexem _operator)//тип выражения опреде
 					case(I_INTEGER):
 						{
 							if(operand1.Ddata >= operand2.Idata)
-								l.Idata = TRUE;
+								l.Idata = true;
 							else
-								l.Idata = FALSE;
+								l.Idata = false;
 							break;
 						}
 					case(I_DOUBLE):
 						{
 							if(operand1.Ddata >= operand2.Ddata)
-								l.Idata = TRUE;
+								l.Idata = true;
 							else
-								l.Idata = FALSE;
+								l.Idata = false;
 							break;
 						}
 					case(I_CHAR):
 						{
 							if(operand1.Ddata >= operand2.Cdata)
-								l.Idata = TRUE;
+								l.Idata = true;
 							else
-								l.Idata = FALSE;
+								l.Idata = false;
 							break;
 						}
 					}
@@ -2136,25 +2140,25 @@ Lexem count(Lexem operand1,Lexem operand2,Lexem _operator)//тип выражения опреде
 					case(I_INTEGER):
 						{
 							if(operand1.Cdata >= operand2.Idata)
-								l.Idata = TRUE;
+								l.Idata = true;
 							else
-								l.Idata = FALSE;
+								l.Idata = false;
 							break;
 						}
 					case(I_DOUBLE):
 						{
 							if(operand1.Cdata >= operand2.Ddata)
-								l.Idata = TRUE;
+								l.Idata = true;
 							else
-								l.Idata = FALSE;
+								l.Idata = false;
 							break;
 						}
 					case(I_CHAR):
 						{
 							if(operand1.Cdata >= operand2.Cdata)
-								l.Idata = TRUE;
+								l.Idata = true;
 							else
-								l.Idata = FALSE;
+								l.Idata = false;
 							break;
 						}
 					}
@@ -2175,25 +2179,25 @@ Lexem count(Lexem operand1,Lexem operand2,Lexem _operator)//тип выражения опреде
 					case(I_INTEGER):
 						{
 							if(operand1.Idata <= operand2.Idata)
-								l.Idata = TRUE;
+								l.Idata = true;
 							else
-								l.Idata = FALSE;
+								l.Idata = false;
 							break;
 						}
 					case(I_DOUBLE):
 						{
 							if(operand1.Idata <= operand2.Ddata)
-								l.Idata = TRUE;
+								l.Idata = true;
 							else
-								l.Idata = FALSE;
+								l.Idata = false;
 							break;
 						}
 					case(I_CHAR):
 						{
 							if(operand1.Idata <= operand2.Cdata)
-								l.Idata = TRUE;
+								l.Idata = true;
 							else
-								l.Idata = FALSE;
+								l.Idata = false;
 							break;
 						}
 					}
@@ -2206,25 +2210,25 @@ Lexem count(Lexem operand1,Lexem operand2,Lexem _operator)//тип выражения опреде
 					case(I_INTEGER):
 						{
 							if(operand1.Ddata <= operand2.Idata)
-								l.Idata = TRUE;
+								l.Idata = true;
 							else
-								l.Idata = FALSE;
+								l.Idata = false;
 							break;
 						}
 					case(I_DOUBLE):
 						{
 							if(operand1.Ddata <= operand2.Ddata)
-								l.Idata = TRUE;
+								l.Idata = true;
 							else
-								l.Idata = FALSE;
+								l.Idata = false;
 							break;
 						}
 					case(I_CHAR):
 						{
 							if(operand1.Ddata <= operand2.Cdata)
-								l.Idata = TRUE;
+								l.Idata = true;
 							else
-								l.Idata = FALSE;
+								l.Idata = false;
 							break;
 						}
 					}
@@ -2237,25 +2241,25 @@ Lexem count(Lexem operand1,Lexem operand2,Lexem _operator)//тип выражения опреде
 					case(I_INTEGER):
 						{
 							if(operand1.Cdata <= operand2.Idata)
-								l.Idata = TRUE;
+								l.Idata = true;
 							else
-								l.Idata = FALSE;
+								l.Idata = false;
 							break;
 						}
 					case(I_DOUBLE):
 						{
 							if(operand1.Cdata <= operand2.Ddata)
-								l.Idata = TRUE;
+								l.Idata = true;
 							else
-								l.Idata = FALSE;
+								l.Idata = false;
 							break;
 						}
 					case(I_CHAR):
 						{
 							if(operand1.Cdata <= operand2.Cdata)
-								l.Idata = TRUE;
+								l.Idata = true;
 							else
-								l.Idata = FALSE;
+								l.Idata = false;
 							break;
 						}
 					}
@@ -2276,25 +2280,25 @@ Lexem count(Lexem operand1,Lexem operand2,Lexem _operator)//тип выражения опреде
 					case(I_INTEGER):
 						{
 							if(operand1.Idata == operand2.Idata)
-								l.Idata = TRUE;
+								l.Idata = true;
 							else
-								l.Idata = FALSE;
+								l.Idata = false;
 							break;
 						}
 					case(I_DOUBLE):
 						{
 							if(operand1.Idata == operand2.Ddata)
-								l.Idata = TRUE;
+								l.Idata = true;
 							else
-								l.Idata = FALSE;
+								l.Idata = false;
 							break;
 						}
 					case(I_CHAR):
 						{
 							if(operand1.Idata == operand2.Cdata)
-								l.Idata = TRUE;
+								l.Idata = true;
 							else
-								l.Idata = FALSE;
+								l.Idata = false;
 							break;
 						}
 					}
@@ -2307,25 +2311,25 @@ Lexem count(Lexem operand1,Lexem operand2,Lexem _operator)//тип выражения опреде
 					case(I_INTEGER):
 						{
 							if(operand1.Ddata == operand2.Idata)
-								l.Idata = TRUE;
+								l.Idata = true;
 							else
-								l.Idata = FALSE;
+								l.Idata = false;
 							break;
 						}
 					case(I_DOUBLE):
 						{
 							if(operand1.Ddata == operand2.Ddata)
-								l.Idata = TRUE;
+								l.Idata = true;
 							else
-								l.Idata = FALSE;
+								l.Idata = false;
 							break;
 						}
 					case(I_CHAR):
 						{
 							if(operand1.Ddata == operand2.Cdata)
-								l.Idata = TRUE;
+								l.Idata = true;
 							else
-								l.Idata = FALSE;
+								l.Idata = false;
 							break;
 						}
 					}
@@ -2338,25 +2342,25 @@ Lexem count(Lexem operand1,Lexem operand2,Lexem _operator)//тип выражения опреде
 					case(I_INTEGER):
 						{
 							if(operand1.Cdata == operand2.Idata)
-								l.Idata = TRUE;
+								l.Idata = true;
 							else
-								l.Idata = FALSE;
+								l.Idata = false;
 							break;
 						}
 					case(I_DOUBLE):
 						{
 							if(operand1.Cdata == operand2.Ddata)
-								l.Idata = TRUE;
+								l.Idata = true;
 							else
-								l.Idata = FALSE;
+								l.Idata = false;
 							break;
 						}
 					case(I_CHAR):
 						{
 							if(operand1.Cdata == operand2.Cdata)
-								l.Idata = TRUE;
+								l.Idata = true;
 							else
-								l.Idata = FALSE;
+								l.Idata = false;
 							break;
 						}
 					}
@@ -2377,25 +2381,25 @@ Lexem count(Lexem operand1,Lexem operand2,Lexem _operator)//тип выражения опреде
 					case(I_INTEGER):
 						{
 							if(operand1.Idata != operand2.Idata)
-								l.Idata = TRUE;
+								l.Idata = true;
 							else
-								l.Idata = FALSE;
+								l.Idata = false;
 							break;
 						}
 					case(I_DOUBLE):
 						{
 							if(operand1.Idata != operand2.Ddata)
-								l.Idata = TRUE;
+								l.Idata = true;
 							else
-								l.Idata = FALSE;
+								l.Idata = false;
 							break;
 						}
 					case(I_CHAR):
 						{
 							if(operand1.Idata != operand2.Cdata)
-								l.Idata = TRUE;
+								l.Idata = true;
 							else
-								l.Idata = FALSE;
+								l.Idata = false;
 							break;
 						}
 					}
@@ -2408,25 +2412,25 @@ Lexem count(Lexem operand1,Lexem operand2,Lexem _operator)//тип выражения опреде
 					case(I_INTEGER):
 						{
 							if(operand1.Ddata != operand2.Idata)
-								l.Idata = TRUE;
+								l.Idata = true;
 							else
-								l.Idata = FALSE;
+								l.Idata = false;
 							break;
 						}
 					case(I_DOUBLE):
 						{
 							if(operand1.Ddata != operand2.Ddata)
-								l.Idata = TRUE;
+								l.Idata = true;
 							else
-								l.Idata = FALSE;
+								l.Idata = false;
 							break;
 						}
 					case(I_CHAR):
 						{
 							if(operand1.Ddata != operand2.Cdata)
-								l.Idata = TRUE;
+								l.Idata = true;
 							else
-								l.Idata = FALSE;
+								l.Idata = false;
 							break;
 						}
 					}
@@ -2439,25 +2443,25 @@ Lexem count(Lexem operand1,Lexem operand2,Lexem _operator)//тип выражения опреде
 					case(I_INTEGER):
 						{
 							if(operand1.Cdata != operand2.Idata)
-								l.Idata = TRUE;
+								l.Idata = true;
 							else
-								l.Idata = FALSE;
+								l.Idata = false;
 							break;
 						}
 					case(I_DOUBLE):
 						{
 							if(operand1.Cdata != operand2.Ddata)
-								l.Idata = TRUE;
+								l.Idata = true;
 							else
-								l.Idata = FALSE;
+								l.Idata = false;
 							break;
 						}
 					case(I_CHAR):
 						{
 							if(operand1.Cdata != operand2.Cdata)
-								l.Idata = TRUE;
+								l.Idata = true;
 							else
-								l.Idata = FALSE;
+								l.Idata = false;
 							break;
 						}
 					}
@@ -2470,25 +2474,25 @@ Lexem count(Lexem operand1,Lexem operand2,Lexem _operator)//тип выражения опреде
 		{
 			l.type_data = I_BOOL;
 			if(operand1.Idata && operand2.Idata)
-				l.Idata = TRUE;
+				l.Idata = true;
 			else
-				l.Idata = FALSE;
+				l.Idata = false;
 		}
 	case(I_OR):
 		{
 			l.type_data = I_BOOL;
 			if(operand1.Idata || operand2.Idata)
-				l.Idata = TRUE;
+				l.Idata = true;
 			else
-				l.Idata = FALSE;
+				l.Idata = false;
 		}
 	}
 	return l;
 }
 
-void last_block_checkout(execute *root,errors_list **er_head,errors_list **war_head,_lists **list,int return_type)
+void last_block_checkout(execute *root,List<Error> *er_head,List<Error> *war_head,_lists **list,int return_type)
 {
-	bool Return = FALSE;
+	bool Return = false;
 	execute *r = root;
 	while(r!=0)
 	{
@@ -2504,14 +2508,14 @@ void last_block_checkout(execute *root,errors_list **er_head,errors_list **war_h
 					while(par!=0)
 					{
 						if(par->nParam->lexem.type == I_STRING)
-							move_to_err_list(I_ERR_IN_F_PARAM,par->nParam->lexem.line_pos,er_head);
+							er_head->Add(Error(I_ERR_IN_F_PARAM,par->nParam->lexem.line_pos));
 						if(par->nParam->lexem.type == I_IDENTIFIC)
 						{
 							lexem_list* a = par->nParam;
 							while(a!=0)
 							{
 								if(!in_var_list((*list)->vList,a->lexem) && !(a->lexem.type >= I_PERCENT && a->lexem.type <= I_INC_PLUS) && a->lexem.type != I_SEMICOLON)
-									move_to_err_list(I_UNKNOWBLE_ID,a->lexem.line_pos,er_head);
+									er_head->Add(Error(I_UNKNOWBLE_ID,a->lexem.line_pos));
 								a = a->next;
 							}
 						}
@@ -2528,7 +2532,7 @@ void last_block_checkout(execute *root,errors_list **er_head,errors_list **war_h
 							while(a!=0)
 							{
 								if(!in_var_list((*list)->vList,a->lexem) && !(a->lexem.type >= I_PERCENT && a->lexem.type <= I_INC_PLUS) && a->lexem.type != I_SEMICOLON)
-									move_to_err_list(I_UNKNOWBLE_ID,a->lexem.line_pos,er_head);
+									er_head->Add(Error(I_UNKNOWBLE_ID,a->lexem.line_pos));
 								a = a->next;
 							}
 						}
@@ -2557,7 +2561,7 @@ void last_block_checkout(execute *root,errors_list **er_head,errors_list **war_h
 						int t = type_expression((lexem_list*)d->index.right);
 						if(!check_expression((lexem_list*)d->index.right,(*list)->vList,er_head))
 						{
-							move_to_err_list(I_UNKNOWBLE_ID,d->index.lexem.line_pos,er_head);
+							er_head->Add(Error(I_UNKNOWBLE_ID,d->index.lexem.line_pos));
 							return;
 						}
 						else
@@ -2566,12 +2570,12 @@ void last_block_checkout(execute *root,errors_list **er_head,errors_list **war_h
 								add_to_var_list(&(*list)->vList,*(Lexem*)d->index.left,tl);
 							else
 							{
-								move_to_err_list(I_REDEFINITION,d->index.lexem.line_pos,er_head);
+								er_head->Add(Error(I_REDEFINITION,d->index.lexem.line_pos));
 								return;
 							}
 						}
 						if(tl != t)
-							move_to_err_list(I_W_IDENTIFICATION,d->index.lexem.line_pos,war_head);
+							er_head->Add(Error(I_W_IDENTIFICATION,d->index.lexem.line_pos));
 					}
 					else
 					{
@@ -2579,10 +2583,10 @@ void last_block_checkout(execute *root,errors_list **er_head,errors_list **war_h
 							add_to_var_list(&(*list)->vList,d->index.lexem,tl);
 						else
 						{
-							move_to_err_list(I_REDEFINITION,d->index.lexem.line_pos,er_head);
+							er_head->Add(Error(I_REDEFINITION,d->index.lexem.line_pos));
 							return;
 						}
-						move_to_err_list(I_NO_INDEFINED,d->index.lexem.line_pos,war_head);
+						er_head->Add(Error(I_NO_INDEFINED,d->index.lexem.line_pos));
 					}
 					d = d->next;
 				}
@@ -2596,7 +2600,7 @@ void last_block_checkout(execute *root,errors_list **er_head,errors_list **war_h
 				
 				if(!in_var_list((*list)->vList,*l))
 				{
-					move_to_err_list(I_UNKNOWBLE_ID,q->lexem.line_pos,er_head);
+					er_head->Add(Error(I_UNKNOWBLE_ID,q->lexem.line_pos));
 					return;
 				}
 				Lexem *t = in_var_list((*list)->vList,*l);
@@ -2605,13 +2609,13 @@ void last_block_checkout(execute *root,errors_list **er_head,errors_list **war_h
 				{
 					if(!in_var_list((*list)->vList,q->lexem) && !(q->lexem.type >= I_PERCENT && q->lexem.type <= I_INC_MINUS) && !(q->lexem.name[0] >='0' && q->lexem.name[0] <= '9') && q->lexem.name[0] != 39)
 					{
-						move_to_err_list(I_UNKNOWBLE_ID,q->lexem.line_pos,er_head);
+						er_head->Add(Error(I_UNKNOWBLE_ID,q->lexem.line_pos));
 					}
 					q = q->next;
 				}
 				q = (lexem_list*)i->right;
 				if(type != type_expression(q))
-					move_to_err_list(I_W_IDENTIFICATION,q->lexem.line_pos,war_head);
+					er_head->Add(Error(I_W_IDENTIFICATION,q->lexem.line_pos));
 				break;
 			}
 		case(I_EXPRESSION):
@@ -2629,7 +2633,7 @@ void last_block_checkout(execute *root,errors_list **er_head,errors_list **war_h
 					if(!(p->lexem.name[0] >= '0' && p->lexem.name[0]<='9') && !(p->lexem.type >= I_LOW && p->lexem.type <= I_AND) && !(p->lexem.type >= I_PERCENT && p->lexem.type <= I_INC_MINUS))
 						if(!in_var_list((*list)->vList,p->lexem))
 						{
-							move_to_err_list(I_UNKNOWBLE_ID,p->lexem.line_pos,er_head);
+							er_head->Add(Error(I_UNKNOWBLE_ID,p->lexem.line_pos));
 						}
 					p = p->next;
 				}
@@ -2646,7 +2650,7 @@ void last_block_checkout(execute *root,errors_list **er_head,errors_list **war_h
 					if(!(p->lexem.name[0] >= '0' && p->lexem.name[0]<='9') && !(p->lexem.type >= I_LOW && p->lexem.type <= I_AND) && !(p->lexem.type >= I_PERCENT && p->lexem.type <= I_INC_MINUS))
 						if(!in_var_list((*list)->vList,p->lexem))
 						{
-							move_to_err_list(I_UNKNOWBLE_ID,p->lexem.line_pos,er_head);
+							er_head->Add(Error(I_UNKNOWBLE_ID,p->lexem.line_pos));
 						}
 					p = p->next;
 				}
@@ -2667,19 +2671,19 @@ void last_block_checkout(execute *root,errors_list **er_head,errors_list **war_h
 					{
 						if(!in_var_list((*list)->vList,q->lexem) && !(q->lexem.type >= I_PERCENT && q->lexem.type <= I_INC_MINUS) && !(q->lexem.name[0] >= '0' && q->lexem.name[0] <= '9') && q->lexem.name[0] != 39)
 						{
-							move_to_err_list(I_UNKNOWBLE_ID,q->lexem.line_pos,er_head);
+							er_head->Add(Error(I_UNKNOWBLE_ID,q->lexem.line_pos));
 							return;
 						}
 						q = q->next;
 					}
 					if(return_type != type_expression(q1))
-						move_to_err_list(I_W_RETURN_DATA,q->lexem.line_pos,war_head);
-					Return = TRUE;
+						er_head->Add(Error(I_W_RETURN_DATA,q->lexem.line_pos));
+					Return = true;
 					printf("\treturn\n");
 				}
 				else
 				{
-					move_to_err_list(I_W_ONE_RETURN,q->lexem.line_pos,war_head);
+					er_head->Add(Error(I_W_ONE_RETURN,q->lexem.line_pos));
 				}
 				break;
 			}
@@ -2734,30 +2738,30 @@ bool check_bool_express(lexem_list* p,lexem_list *vl)
 			case(I_INTEGER):
 				{
 					if(!p->lexem.Idata)
-						return FALSE;
+						return false;
 					else
-						return TRUE;
+						return true;
 					break;
 				}
 			case(I_DOUBLE):
 				{
 					if(!p->lexem.Ddata)
-						return FALSE;
+						return false;
 					else
-						return TRUE;
+						return true;
 					break;
 				}
 			case(I_CHAR):
 				{
 					if(!p->lexem.Cdata)
-						return FALSE;
+						return false;
 					else
-						return TRUE;
+						return true;
 					break;
 				}
 			default:
 				cout<<"minak osel:)))))))))))"<<endl;
-				return TRUE;
+				return true;
 			}
 		}
 		else
@@ -2768,30 +2772,30 @@ bool check_bool_express(lexem_list* p,lexem_list *vl)
 			case(I_INTEGER):
 				{
 					if(!q->Idata)
-						return FALSE;
+						return false;
 					else
-						return TRUE;
+						return true;
 					break;
 				}
 			case(I_DOUBLE):
 				{
 					if(!q->Ddata)
-						return FALSE;
+						return false;
 					else
-						return TRUE;
+						return true;
 					break;
 				}
 			case(I_CHAR):
 				{
 					if(!q->Cdata)
-						return FALSE;
+						return false;
 					else
-						return TRUE;
+						return true;
 					break;
 				}
 			default:
 				cout<<"minak osel:)))))))))))"<<endl;
-				return TRUE;
+				return true;
 			}
 		}
 	}
@@ -2898,8 +2902,8 @@ bool check_bool_express(lexem_list* p,lexem_list *vl)
 		r2 = r2->next;
 	}
 	if(r2->lexem.Idata)
-		return TRUE;
-	return FALSE;
+		return true;
+	return false;
 }
 
 lexem_list* update_bool_param(lexem_list *p)

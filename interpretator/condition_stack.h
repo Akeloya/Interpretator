@@ -1,7 +1,6 @@
-#ifndef CONDITION_STACK_H
-#define CONDITION_STACK_H
+#pragma once
 
-#include "main.h"
+#include "Common.h"
 
 typedef struct condition_stack
 {
@@ -12,5 +11,3 @@ typedef struct condition_stack
 void push_condition(int n_state,c_stack** stack_head);
 int peek_condition(c_stack* stack_head);
 int pop_condition(c_stack** stack_head);
-
-#endif

@@ -4,9 +4,10 @@ namespace Interpreter {
 	namespace Collections {
 
 		template<typename T>
-		Iterator<T>::Iterator(ListItem<T>* root)
+		Iterator<T>::Iterator(ListItem* root)
 		{
-			root = root;
+			started = false;
+			current = root;
 		}
 
 		template<typename T>
@@ -19,7 +20,6 @@ namespace Interpreter {
 		template<typename T>
 		bool Iterator<T>::MoveNext()
 		{
-			
 			if (current == nullptr || current->next == nullptr)
 				return false;
 			if (started)
@@ -30,11 +30,11 @@ namespace Interpreter {
 		}
 
 		template<typename T>
-		T Iterator<T>::Get()
+		T* Iterator<T>::Get()
 		{
 			if (current == nullptr)
-				return (T)nullptr;
-			return current->Value;
+				return nullptr;
+			return (T*)current->Value;
 		}
 
 		template<typename T>
@@ -58,7 +58,7 @@ namespace Interpreter {
 		{
 			if (_root == nullptr)
 				return 0;
-			ListItem<T>* curr = _root;
+			ListItem* curr = _root;
 			int count = curr != nullptr ? 1 : 0;
 			for (; curr->next != nullptr; count++)
 				curr = curr->next;
@@ -68,7 +68,7 @@ namespace Interpreter {
 		template<typename T>
 		T List<T>::GetAt(int index)
 		{
-			ListItem<T>* curr = _root;
+			ListItem* curr = _root;
 			int i = 0;
 			for (; i < index; i++)
 			{
@@ -84,7 +84,7 @@ namespace Interpreter {
 		template<typename T>
 		Iterator<T> List<T>::GetIterator()
 		{
-			return Iterator<T>(_root);
+			return Iterator<T>::Iterator(_root);
 		}
 
 		template<typename T>
@@ -92,14 +92,15 @@ namespace Interpreter {
 		{
 			if (_root == nullptr)
 			{
-				_root = new ListItem<T>();
-				_root->Value = value;
-				_last = _root;
+				ListItem* s = new ListItem();
+				s->Value = &value;
+				_root = s;
+				_last = s;
 				return;
 			}
 
-			ListItem<T>* item = new ListItem<T>();
-			item->Value = value;
+			ListItem* item = new ListItem();
+			item->Value = &value;
 			_last->next = item;
 			item->prev = _last;
 			_last = item;
@@ -110,11 +111,11 @@ namespace Interpreter {
 		{
 			int index = -1;
 			bool finded = false;
-			ListItem<T>* curr = _root;
+			ListItem* curr = _root;
 			while (curr != nullptr)
 			{
 				index++;
-				if (curr->Value == value)
+				if (*(T*)curr->Value == value)
 				{
 					finded = true;
 					break;
@@ -129,11 +130,11 @@ namespace Interpreter {
 		template<typename T>
 		void List<T>::Remove(T value)
 		{
-			ListItem<T>* curr = _root;
-			while (curr != nullptr && curr->Value != value)
+			ListItem* curr = _root;
+			while (curr != nullptr && (T)curr->Value != value)
 				curr = curr->next;
 
-			if (curr == nullptr || curr->Value != value)
+			if (curr == nullptr || (T)curr->Value != value)
 				return;
 
 			if (curr->prev != nullptr)
@@ -164,17 +165,17 @@ namespace Interpreter {
 			ListItem<T>* curr = getIndexOf(index);
 
 			if (curr == nullptr)
-				retun;
-			ListItem<T>* newItem = new listItem();
+				return T();
+			ListItem<T>* newItem = new ListItem<T>();
 			newItem->value = value;
 			newItem->next = curr;
-			newitem->prev = curr->prev;
+			newItem->prev = curr->prev;
 		}
 
 		template<typename T>
 		void List<T>::RemoveAt(int index)
 		{
-			ListItem<T>* curr = getIndexOf(index);
+			ListItem* curr = getIndexOf(index);
 
 			if (curr == nullptr)
 				return;
@@ -197,40 +198,4 @@ namespace Interpreter {
 				_root = nullptr;
 		}
 	}
-}
-
-void move_to_list(Lexem sLexem, struct lexem_list** head)
-{
-	lexem_list* p = (lexem_list*)malloc(sizeof(lexem_list));
-	memset(p->lexem.name, 0, 256);
-	p->lexem = sLexem;
-	if ((*head) == 0)
-	{
-		p->prew = (*head);
-		p->next = 0;
-		(*head) = (lexem_list*)malloc(sizeof(lexem_list));
-		(*head) = p;
-	}
-	else
-	{
-		p->prew = (*head);
-		(*head)->next = p;
-		(*head) = p;
-		(*head)->next = 0;
-	}
-}
-
-int search_in_var_list(Lexem lexem, lexem_list* var_list)
-{
-	lexem_list* p = var_list;
-	if (p != 0)
-	{
-		while (p != 0)
-		{
-			if (p->lexem.type == lexem.type && strcmp(p->lexem.name, lexem.name) == 0)
-				return TRUE;
-			p = p->next;
-		}
-	}
-	return FALSE;
 }

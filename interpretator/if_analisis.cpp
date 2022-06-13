@@ -7,11 +7,11 @@
 #include "stack.h"
 
 
-void if_analisis(lexem_list **lex_head,errors_list** er_head,Stack<int>* stack)
+void if_analisis(lexem_list **lex_head,List<Error>* er_head,Stack<int>* stack)
 {
 	lexem_list *p = (*lex_head);
 
-	bool exit = FALSE;
+	bool exit = false;
 
 	while(p != 0 && !exit)
 	{
@@ -42,7 +42,7 @@ void if_analisis(lexem_list **lex_head,errors_list** er_head,Stack<int>* stack)
 						stack->Pop();
 						if(stack->Peek() == I_IF)
 						{
-							exit = TRUE;
+							exit = true;
 						}
 						break;
 					}
@@ -52,7 +52,7 @@ void if_analisis(lexem_list **lex_head,errors_list** er_head,Stack<int>* stack)
 						while_analisis(&p,er_head,stack);
 						stack->Pop();
 						if(stack->Peek() == I_IF)
-							exit = TRUE;
+							exit = true;
 						break;
 					}
 					if(strcmp("return",p->lexem.name) == 0)
@@ -94,7 +94,7 @@ void if_analisis(lexem_list **lex_head,errors_list** er_head,Stack<int>* stack)
 					stack->Push(I_BODY);
 					block_analisis(&p,er_head,stack,I_BLOCK_CLOSE);
 					if(p!=0 && p->next!=0 && strcmp(p->next->lexem.name,"else") != 0)
-						exit = TRUE;
+						exit = true;
 					stack->Pop();
 					break;
 				}
@@ -120,7 +120,7 @@ void if_analisis(lexem_list **lex_head,errors_list** er_head,Stack<int>* stack)
 							assignment_analisis(&p,er_head,stack);
 							stack->Pop();
 							if(p->next!=0 && strcmp(p->next->lexem.name,"else") != 0)
-								exit = TRUE;
+								exit = true;
 							break;
 						}
 						if(p->next!=0 && p->next->lexem.type == I_BRACKET_OPEN)
@@ -129,7 +129,7 @@ void if_analisis(lexem_list **lex_head,errors_list** er_head,Stack<int>* stack)
 							funct_inline_analisis(&p,er_head,stack);
 							stack->Pop();
 							if(p!=0 && p->next!=0 && strcmp(p->next->lexem.name,"else") != 0)
-								exit = TRUE;
+								exit = true;
 							break;
 						}
 						//printf("ifasvasdv");

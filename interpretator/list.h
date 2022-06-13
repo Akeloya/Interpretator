@@ -1,45 +1,36 @@
 #pragma once
 
-#include "main.h"
-
-void move_to_list(Lexem sLexem,lexem_list **head);
-
-int search_in_var_list(Lexem lexem,lexem_list *var_list);
-
 namespace Interpreter {
 	namespace Collections {
 
-		template<typename T>
 		struct ListItem {
-		public:
-			ListItem* next;
-			ListItem* prev;
-			T Value;
+			ListItem* next = nullptr;
+			ListItem* prev = nullptr;
+			void* Value = nullptr;
 		};
+
 
 		template<typename T>
 		class Iterator {
 		private:
 			bool started;
-			ListItem<T>* current;
+			ListItem* current;
 		public:
-			Iterator(ListItem<T>* root);
+			Iterator(ListItem* root);
 			~Iterator();
 			bool MoveNext();
-			T Get();
+			T* Get();
 		};
 
 		template<typename T>
-		class List
-		{
+		class List {
 		private:
 			int _count;
-			
-			ListItem<T>* _root;
-			ListItem<T>* _last;
-			ListItem<T>* getIndexOf(int index)
-			{
-				ListItem<T>* curr = _root;
+
+			ListItem* _root;
+			ListItem* _last;
+			ListItem* getIndexOf(int index) {
+				ListItem* curr = _root;
 				int count = 0;
 				while (count < index && curr != nullptr)
 				{
@@ -59,6 +50,6 @@ namespace Interpreter {
 			T GetAt(int index);
 			Iterator<T> GetIterator();
 			~List();
-		};		
+		};
 	}
 }

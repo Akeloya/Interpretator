@@ -1,8 +1,3 @@
-#ifndef STRING_H
-#define STRING_H
-
-#include "main.h"
+#pragma once
 
 char* update_string(char* s);
-
-#endif

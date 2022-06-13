@@ -4,14 +4,14 @@ void push_condition(int condition,c_stack** stack_head)
 {
 	if( (*stack_head) == 0 )
 	{
-		c_stack *p = (c_stack*)malloc(sizeof(c_stack));
+		c_stack* p = new c_stack();
 		p->next = 0;
 		p->condition = condition;
 		(*stack_head) = p;
 	}
 	else
 	{
-		c_stack *p = (c_stack*)malloc(sizeof(c_stack));
+		c_stack* p = new c_stack();
 		p->next = (*stack_head);
 		p->condition = condition;
 		(*stack_head) = p;
@@ -38,12 +38,12 @@ int pop_condition(c_stack** stack_head)
 		if(p->next != 0)
 		{
 			(*stack_head) = (*stack_head)->next;
-			free(p);
+			delete p;
 		}
 		else
 		{
 			(*stack_head)->next = 0;
-			free(p);
+			delete p;
 		}
 	}
 	return condition;

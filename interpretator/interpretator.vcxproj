@@ -17,9 +17,10 @@
     <ClCompile Include="execute.cpp" />
     <ClCompile Include="expression_analisis.cpp" />
     <ClCompile Include="funct_analisis.cpp" />
-    <ClCompile Include="hand_errors.cpp" />
+    <ClCompile Include="Errors.cpp" />
     <ClCompile Include="if_analisis.cpp" />
     <ClCompile Include="i_string.cpp" />
+    <ClCompile Include="Lexem.cpp" />
     <ClCompile Include="lexem_snalisis.cpp" />
     <ClCompile Include="list.cpp" />
     <ClCompile Include="main.cpp" />
@@ -29,14 +30,16 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="body_analisis.h" />
+    <ClInclude Include="Common.h" />
     <ClInclude Include="condition_stack.h" />
     <ClInclude Include="declaration.h" />
     <ClInclude Include="execute.h" />
     <ClInclude Include="expression_analisis.h" />
     <ClInclude Include="funct_analisis.h" />
-    <ClInclude Include="hand_errors.h" />
+    <ClInclude Include="Errors.h" />
     <ClInclude Include="if_analisis.h" />
     <ClInclude Include="i_string.h" />
+    <ClInclude Include="Lexem.h" />
     <ClInclude Include="lexem_analisis.h" />
     <ClInclude Include="list.h" />
     <ClInclude Include="main.h" />
@@ -95,6 +98,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <LanguageStandard>Default</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

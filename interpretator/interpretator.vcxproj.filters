@@ -33,7 +33,7 @@
     <ClCompile Include="funct_analisis.cpp">
       <Filter>Файлы исходного кода</Filter>
     </ClCompile>
-    <ClCompile Include="hand_errors.cpp">
+    <ClCompile Include="Errors.cpp">
       <Filter>Файлы исходного кода</Filter>
     </ClCompile>
     <ClCompile Include="i_string.cpp">
@@ -60,6 +60,9 @@
     <ClCompile Include="Stack.cpp">
       <Filter>Файлы исходного кода</Filter>
     </ClCompile>
+    <ClCompile Include="Lexem.cpp">
+      <Filter>Файлы исходного кода</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="body_analisis.h">
@@ -80,7 +83,7 @@
     <ClInclude Include="funct_analisis.h">
       <Filter>Заголовочные файлы</Filter>
     </ClInclude>
-    <ClInclude Include="hand_errors.h">
+    <ClInclude Include="Errors.h">
       <Filter>Заголовочные файлы</Filter>
     </ClInclude>
     <ClInclude Include="i_string.h">
@@ -108,6 +111,12 @@
       <Filter>Заголовочные файлы</Filter>
     </ClInclude>
     <ClInclude Include="resource.h">
+      <Filter>Заголовочные файлы</Filter>
+    </ClInclude>
+    <ClInclude Include="Lexem.h">
+      <Filter>Заголовочные файлы</Filter>
+    </ClInclude>
+    <ClInclude Include="Common.h">
       <Filter>Заголовочные файлы</Filter>
     </ClInclude>
   </ItemGroup>

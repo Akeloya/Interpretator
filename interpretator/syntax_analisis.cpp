@@ -1,9 +1,12 @@
 #include "syntax_analisis.h"
+#include "list.h"
+#include "Lexem.h"
+#include "Common.h"
 #include "funct_analisis.h"
-#include "stack.h"
 
+using namespace Interpreter::Collections;
 
-int syntax_analisis(lexem_list *lex_head,Stack<int>* stack,lexem_list **var_list,errors_list** er_head)
+int syntax_analisis(lexem_list *lex_head,Stack<int>* stack,lexem_list **var_list,List<Error>* er_head)
 {
 	lexem_list *p = lex_head;
 	while(p!=0)
@@ -21,13 +24,13 @@ int syntax_analisis(lexem_list *lex_head,Stack<int>* stack,lexem_list **var_list
 					}
 					else
 					{
-						move_to_err_list(I_ILLEGAL_EXPRES,p->lexem.line_pos,er_head);
+						er_head->Add(Error(I_ILLEGAL_EXPRES,p->lexem.line_pos));
 						break;
 					}
 				}
 				else
 				{
-					move_to_err_list(I_UNEXTENDED,p->lexem.line_pos,er_head);
+					er_head->Add(Error(I_UNEXTENDED,p->lexem.line_pos));
 				}
 				break;
 			}
@@ -46,7 +49,7 @@ int syntax_analisis(lexem_list *lex_head,Stack<int>* stack,lexem_list **var_list
 					}
 					else
 					{
-						move_to_err_list(I_UNEXTENDED,p->lexem.line_pos,er_head);
+						er_head->Add(Error(I_UNEXTENDED,p->lexem.line_pos));
 					}
 				}
 				if(stack->Peek() == I_PROGRAMM)
@@ -60,7 +63,7 @@ int syntax_analisis(lexem_list *lex_head,Stack<int>* stack,lexem_list **var_list
 					}
 					else
 					{
-						move_to_err_list(I_UNEXTENDED,p->lexem.line_pos,er_head);
+						er_head->Add(Error(I_UNEXTENDED,p->lexem.line_pos));
 					}
 				}
 				break;
@@ -77,7 +80,7 @@ int syntax_analisis(lexem_list *lex_head,Stack<int>* stack,lexem_list **var_list
 			if(stack->Peek() == I_PROGRAMM)
 				break;
 			else
-				move_to_err_list(I_NO_END_OF_FILE,0,er_head);
+				er_head->Add(Error(I_NO_END_OF_FILE,0));
 		}
 	}
 	return 0;
