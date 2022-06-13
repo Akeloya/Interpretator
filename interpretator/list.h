@@ -3,10 +3,11 @@
 namespace Interpreter {
 	namespace Collections {
 
+		template<typename T>
 		struct ListItem {
 			ListItem* next = nullptr;
 			ListItem* prev = nullptr;
-			void* Value = nullptr;
+			T* Value = nullptr;
 		};
 
 
@@ -14,9 +15,9 @@ namespace Interpreter {
 		class Iterator {
 		private:
 			bool started;
-			ListItem* current;
+			ListItem<T>* current;
 		public:
-			Iterator(ListItem* root);
+			Iterator(ListItem<T>* root);
 			~Iterator();
 			bool MoveNext();
 			T* Get();
@@ -27,10 +28,10 @@ namespace Interpreter {
 		private:
 			int _count;
 
-			ListItem* _root;
-			ListItem* _last;
-			ListItem* getIndexOf(int index) {
-				ListItem* curr = _root;
+			ListItem<T>* _root;
+			ListItem<T>* _last;
+			ListItem<T>* getIndexOf(int index) {
+				ListItem<T>* curr = _root;
 				int count = 0;
 				while (count < index && curr != nullptr)
 				{
@@ -43,11 +44,11 @@ namespace Interpreter {
 			List();
 			void Add(T value);
 			void Remove(T value);
-			void RemoveAt(int index);
-			void InsertAt(T value, int index);
+			void RemoveAt(const int index);
+			void InsertAt(T value, const int index);
 			int IndexOf(T value);
 			int Count();
-			T GetAt(int index);
+			T GetAt(const int index);
 			Iterator<T> GetIterator();
 			~List();
 		};

@@ -4,7 +4,7 @@ namespace Interpreter {
 	namespace Collections {
 
 		template<typename T>
-		Iterator<T>::Iterator(ListItem* root)
+		Iterator<T>::Iterator(ListItem<T>* root)
 		{
 			started = false;
 			current = root;
@@ -15,6 +15,7 @@ namespace Interpreter {
 		{
 			current = nullptr;
 			delete current;
+			
 		}
 
 		template<typename T>
@@ -34,7 +35,7 @@ namespace Interpreter {
 		{
 			if (current == nullptr)
 				return nullptr;
-			return (T*)current->Value;
+			return current->Value;
 		}
 
 		template<typename T>
@@ -51,6 +52,7 @@ namespace Interpreter {
 			for (int i = 0; i < Count(); i++)
 				RemoveAt(0);
 			delete _root;
+			delete _last;
 		}
 
 		template<typename T>
@@ -58,7 +60,7 @@ namespace Interpreter {
 		{
 			if (_root == nullptr)
 				return 0;
-			ListItem* curr = _root;
+			ListItem<T>* curr = _root;
 			int count = curr != nullptr ? 1 : 0;
 			for (; curr->next != nullptr; count++)
 				curr = curr->next;
@@ -68,7 +70,7 @@ namespace Interpreter {
 		template<typename T>
 		T List<T>::GetAt(int index)
 		{
-			ListItem* curr = _root;
+			ListItem<T>* curr = _root;
 			int i = 0;
 			for (; i < index; i++)
 			{
@@ -90,17 +92,19 @@ namespace Interpreter {
 		template<typename T>
 		void List<T>::Add(T value)
 		{
+			T* copyVar = (T*)malloc(sizeof(T));
+			*copyVar = value;
 			if (_root == nullptr)
 			{
-				ListItem* s = new ListItem();
-				s->Value = &value;
+				ListItem<T>* s = new ListItem<T>();
+				s->Value = copyVar;
 				_root = s;
 				_last = s;
 				return;
 			}
 
-			ListItem* item = new ListItem();
-			item->Value = &value;
+			ListItem<T>* item = new ListItem<T>();
+			item->Value = copyVar;
 			_last->next = item;
 			item->prev = _last;
 			_last = item;
@@ -111,11 +115,11 @@ namespace Interpreter {
 		{
 			int index = -1;
 			bool finded = false;
-			ListItem* curr = _root;
+			ListItem<T>* curr = _root;
 			while (curr != nullptr)
 			{
 				index++;
-				if (*(T*)curr->Value == value)
+				if (*curr->Value == value)
 				{
 					finded = true;
 					break;
@@ -130,11 +134,11 @@ namespace Interpreter {
 		template<typename T>
 		void List<T>::Remove(T value)
 		{
-			ListItem* curr = _root;
-			while (curr != nullptr && (T)curr->Value != value)
+			ListItem<T>* curr = _root;
+			while (curr != nullptr && *curr->Value != value)
 				curr = curr->next;
 
-			if (curr == nullptr || (T)curr->Value != value)
+			if (curr == nullptr || *curr->Value != value)
 				return;
 
 			if (curr->prev != nullptr)
@@ -154,18 +158,19 @@ namespace Interpreter {
 			{
 				curr->next->prev = curr->prev;
 			}
+			delete curr->Value;
 			delete curr;
 			if (rootIsCurr && !rootChanged)
 				_root = nullptr;
 		}
 
 		template<typename T>
-		void List<T>::InsertAt(T value, int index)
+		void List<T>::InsertAt(T value, const int index)
 		{
 			ListItem<T>* curr = getIndexOf(index);
 
 			if (curr == nullptr)
-				return T();
+				return;
 			ListItem<T>* newItem = new ListItem<T>();
 			newItem->value = value;
 			newItem->next = curr;
@@ -173,9 +178,9 @@ namespace Interpreter {
 		}
 
 		template<typename T>
-		void List<T>::RemoveAt(int index)
+		void List<T>::RemoveAt(const int index)
 		{
-			ListItem* curr = getIndexOf(index);
+			ListItem<T>* curr = getIndexOf(index);
 
 			if (curr == nullptr)
 				return;
@@ -193,6 +198,8 @@ namespace Interpreter {
 
 			if (curr->next != nullptr)
 				curr->next->prev = curr->prev;
+
+			delete curr->Value;
 			delete curr;
 			if (rootIsCurr && !rootChanged)
 				_root = nullptr;
